@@ -1,60 +1,36 @@
 using System;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+
 
 namespace Ailurus
 {
     public partial class MainWindow : Window
     {
-        private CefGlueBrowserControl? _webView;
+        private readonly TabController _tabController;
 
-        
         public MainWindow()
         {
-            try
-            {
-                Console.WriteLine("MainWindow constructor started.");
-                InitializeComponent();
-                Console.WriteLine("MainWindow constructor completed.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception in MainWindow constructor: " + ex);
-                throw;
-            }
-        }
+            InitializeComponent();
 
-        private void InitializeComponent()
-        {
-            try
-            {
-                Console.WriteLine("Initializing MainWindow components.");
-                AvaloniaXamlLoader.Load(this);
-                Console.WriteLine("MainWindow components initialized.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception in InitializeComponent: " + ex);
-                throw;
-            }
+            var tabControl = this.FindControl<TabControl>("tabControl");
+            _tabController = new TabController(tabControl);
         }
 
         private void GoButton_Click(object sender, RoutedEventArgs e)
         {
-            try{
-                Console.WriteLine("GoButton clicked.");
-                var urlBox = this.FindControl<TextBox>("urlBox");
-                if (urlBox != null && Uri.TryCreate(urlBox.Text, UriKind.Absolute, out var uri))
-                {
-                    Console.WriteLine($"Navigating to URL: {uri}");
-                    _webView?.Navigate(uri.ToString());
-                }
+            var urlBox = this.FindControl<TextBox>("urlBox");
+            if (urlBox != null && Uri.TryCreate(urlBox.Text, UriKind.Absolute, out var uri))
+            {
+                _tabController.NavigateCurrentTab(uri.ToString());
             }
-            catch (Exception ex){
-                Console.WriteLine("Exception in GoButton_Click: " + ex);
-                throw;
-            }
+        }
+
+        private void NewTabButton_Click(object sender, RoutedEventArgs e)
+        {
+            _tabController.AddTab("https://www.example.com"); // Example URL or start page
         }
     }
 }

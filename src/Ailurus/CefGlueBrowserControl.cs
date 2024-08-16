@@ -1,6 +1,4 @@
-using System;
 using Avalonia.Controls;
-using Xilium.CefGlue;
 using Xilium.CefGlue.Avalonia;
 
 namespace Ailurus
@@ -12,16 +10,30 @@ namespace Ailurus
         public CefGlueBrowserControl()
         {
             _browser = new AvaloniaCefBrowser();
-            this.LogicalChildren.Add(_browser);
+            LogicalChildren.Add(_browser);
         }
 
         public void Navigate(string url)
         {
-            if (_browser != null)
+            _browser.Address = url;
+        }
+
+        public void GoBack()
+        {
+            if (_browser.CanGoBack)
             {
-                _browser.Address = url;
+                _browser.GoBack();
             }
         }
+
+        public void GoForward()
+        {
+            if (_browser.CanGoForward)
+            {
+                _browser.GoForward();
+            }
+        }
+
+        public string Address => _browser.Address;
     }
 }
-

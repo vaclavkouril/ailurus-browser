@@ -3,14 +3,24 @@
         xmlns:local="clr-namespace:Ailurus"
         x:Class="Ailurus.MainWindow"
         Title="Ailurus Web Browser"
-        Width="800" Height="600">
+        Width="800" Height="600"
+        Background="White">
+
+	<Grid>
+	<Rectangle Grid.Column="0" Background="Black" Width="40"></Rectangle>
+	<Label Background="Orange" Height="69">AILURUS BROWSER</Label>
+	</Grid>    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <TextBox Name="urlBox" Grid.Row="0" Margin="5"/>
-        <Button Name="goButton" Content="Go" Grid.Row="0" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Center" Click="GoButton_Click"/>
-        <local:CefGlueBrowserControl Name="webView" Grid.Row="1"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <TextBox Name="urlBox" Width="600" Margin="5"/>
+            <Button Name="goButton" Content="Go" Width="50" Margin="5" Click="GoButton_Click"/>
+        </StackPanel>
+        <TabControl Name="tabControl" Grid.Row="1" Margin="5">
+            <!-- Tabs will be added here dynamically -->
+        </TabControl>
     </Grid>
 </Window>
