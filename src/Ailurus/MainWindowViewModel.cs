@@ -1,46 +1,66 @@
-using Avalonia.ReactiveUI;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using ReactiveUI;
-using System;
-using System.Reactive;
 using System.Collections.ObjectModel;
-using System.Linq;
-
+using System.Reactive;
 
 namespace Ailurus.ViewModels
 {
+    public class BrowserTabViewModel : ReactiveObject
+    {
+        private string _header = string.Empty;
+        private object _content = new object();
+
+        public string Header
+        {
+            get => _header;
+            set => this.RaiseAndSetIfChanged(ref _header, value);
+        }
+
+        public object Content
+        {
+            get => _content;
+            set => this.RaiseAndSetIfChanged(ref _content, value);
+        }
+
+        public ReactiveCommand<Unit, Unit> CloseTabCommand { get; }
+
+        public BrowserTabViewModel()
+        {
+            CloseTabCommand = ReactiveCommand.Create(() => { /* Close tab logic */ });
+        }
+
+        public void Navigate(string url)
+        {
+            if (_content is CefGlueBrowserControl browserControl)
+            {
+                browserControl.Navigate(url);
+            }
+        }
+    }
+
     public class MainWindowViewModel : ReactiveObject
     {
-        public ObservableCollection<BrowserTabViewModel> Tabs { get; } = new ObservableCollection<BrowserTabViewModel>();
+        public ObservableCollection<BrowserTabViewModel> Tabs { get; set; } = new ObservableCollection<BrowserTabViewModel>();
 
-        private BrowserTabViewModel _selectedTab;
+        private BrowserTabViewModel _selectedTab = new BrowserTabViewModel();
         public BrowserTabViewModel SelectedTab
         {
             get => _selectedTab;
             set => this.RaiseAndSetIfChanged(ref _selectedTab, value);
         }
 
-        public ReactiveCommand<Unit, Unit> CloseTabCommand { get; }
+        public ReactiveCommand<Unit, Unit> AddNewTabCommand { get; }
 
         public MainWindowViewModel()
         {
-            // Initialize with a default tab
-            var initialTab = new BrowserTabViewModel { Header = "New Tab" };
-            Tabs.Add(initialTab);
-            SelectedTab = initialTab;
-
-            CloseTabCommand = ReactiveCommand.Create(() => 
-            {
-                if (SelectedTab != null)
-                {
-                    Tabs.Remove(SelectedTab);
-                    SelectedTab = Tabs.FirstOrDefault();
-                }
-            });
+            AddNewTabCommand = ReactiveCommand.Create(AddNewTab);
+            AddNewTab(); // Start with one tab open
         }
 
-        public void AddNewTab()
+        private void AddNewTab()
         {
-            var newTab = new BrowserTabViewModel { Header = "New Tab" };
+            var newTab = new BrowserTabViewModel { Header = "New Tab", Content = new CefGlueBrowserControl() };
             Tabs.Add(newTab);
             SelectedTab = newTab;
         }

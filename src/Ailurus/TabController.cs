@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using ReactiveUI;
 using Avalonia.Controls;
+using Ailurus.ViewModels;
 
 namespace Ailurus
 {
@@ -18,19 +19,9 @@ namespace Ailurus
 
         public void AddNewTab(string url)
         {
-            var newTab = new BrowserTabViewModel
-            {
-                Header = "New Tab",
-                Content = new CefGlueBrowserControl(),
-                CloseTabCommand = ReactiveCommand.Create<BrowserTabViewModel>(tab =>
-                {
-                    Tabs.Remove(tab);
-                })
-            };
-
-            Tabs.Add(newTab);
-            _tabControl.SelectedItem = newTab;
+            var newTab = new BrowserTabViewModel();
             newTab.Navigate(url);
+            Tabs.Add(newTab);
         }
 
         public void NavigateCurrentTab(string url)

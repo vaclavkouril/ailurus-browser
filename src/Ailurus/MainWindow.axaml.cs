@@ -2,28 +2,26 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
-using System.Collections.ObjectModel;
+using Ailurus.ViewModels;
+
 
 namespace Ailurus
 {
     public partial class MainWindow : Window
     {
-        private readonly TabController _tabController;
-
         public MainWindow()
         {
             InitializeComponent();
             
-            var tabControl = this.FindControl<TabControl>("tabControl");
-            if (tabControl == null)
+            // Assuming DataContext is set in XAML
+            var viewModel = DataContext as MainWindowViewModel;
+            if (viewModel == null)
             {
-                throw new InvalidOperationException("TabControl not found in the XAML.");
+                throw new InvalidOperationException("MainWindowViewModel not found in DataContext.");
             }
 
-            _tabController = new TabController(tabControl);
-
             // Open a default tab on startup
-            _tabController.AddNewTab("http://example.com");
+            viewModel.AddNewTabCommand.Execute().Subscribe();
         }
 
         private void GoButton_Click(object sender, RoutedEventArgs e)
@@ -31,13 +29,18 @@ namespace Ailurus
             var urlBox = this.FindControl<TextBox>("urlBox");
             if (urlBox != null && Uri.TryCreate(urlBox.Text, UriKind.Absolute, out var uri))
             {
-                _tabController.NavigateCurrentTab(uri.ToString());
+                var viewModel = DataContext as MainWindowViewModel;
+                if (viewModel != null && viewModel.SelectedTab != null)
+                {
+                    viewModel.SelectedTab.Content = uri.ToString(); // Assuming Content is of type string (URI)
+                }
             }
         }
 
         private void NewTabButton_Click(object sender, RoutedEventArgs e)
         {
-            _tabController.AddNewTab("http://example.com"); // Or start with a blank page
+            var viewModel = DataContext as MainWindowViewModel;
+            viewModel?.AddNewTabCommand.Execute().Subscribe();
         }
     }
 }
