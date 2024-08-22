@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{12828020-DF24-4620-8BB6-DFE38257A4CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ailurus", "src\Ailurus\Ailurus.csproj", "{97173D28-70EB-42F0-9F7D-C7C3B4FB6702}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{141A87DD-AAD8-4707-ADE2-1E26530EA06B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ailurus.Tests", "test\Ailurus.Tests\Ailurus.Tests.csproj", "{BFBD88D9-DF1A-417C-9EB6-5B5A7212D44D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97173D28-70EB-42F0-9F7D-C7C3B4FB6702}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97173D28-70EB-42F0-9F7D-C7C3B4FB6702}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97173D28-70EB-42F0-9F7D-C7C3B4FB6702}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97173D28-70EB-42F0-9F7D-C7C3B4FB6702}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFBD88D9-DF1A-417C-9EB6-5B5A7212D44D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFBD88D9-DF1A-417C-9EB6-5B5A7212D44D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFBD88D9-DF1A-417C-9EB6-5B5A7212D44D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFBD88D9-DF1A-417C-9EB6-5B5A7212D44D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{97173D28-70EB-42F0-9F7D-C7C3B4FB6702} = {12828020-DF24-4620-8BB6-DFE38257A4CE}
+		{BFBD88D9-DF1A-417C-9EB6-5B5A7212D44D} = {141A87DD-AAD8-4707-ADE2-1E26530EA06B}
+	EndGlobalSection
+EndGlobal
