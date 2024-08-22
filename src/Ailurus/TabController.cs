@@ -1,4 +1,6 @@
+using System;
 using System.Collections.ObjectModel;
+using ReactiveUI;
 using Avalonia.Controls;
 
 namespace Ailurus
@@ -6,38 +8,37 @@ namespace Ailurus
     public class TabController
     {
         private readonly TabControl _tabControl;
-        private readonly ObservableCollection<BrowserTab> _tabs;
+        public ObservableCollection<BrowserTabViewModel> Tabs { get; } = new ObservableCollection<BrowserTabViewModel>();
 
         public TabController(TabControl tabControl)
         {
             _tabControl = tabControl;
-            _tabs = new ObservableCollection<BrowserTab>();
-            _tabControl.Items = _tabs;
+            _tabControl.ItemsSource = Tabs;
         }
 
-        public void AddTab(string url)
+        public void AddNewTab(string url)
         {
-            var newTab = new BrowserTab(url);
-            _tabs.Add(newTab);
-            _tabControl.SelectedItem = newTab; // Optionally select the new tab
-        }
+            var newTab = new BrowserTabViewModel
+            {
+                Header = "New Tab",
+                Content = new CefGlueBrowserControl(),
+                CloseTabCommand = ReactiveCommand.Create<BrowserTabViewModel>(tab =>
+                {
+                    Tabs.Remove(tab);
+                })
+            };
 
-        public void CloseTab(BrowserTab tab)
-        {
-            _tabs.Remove(tab);
+            Tabs.Add(newTab);
+            _tabControl.SelectedItem = newTab;
+            newTab.Navigate(url);
         }
 
         public void NavigateCurrentTab(string url)
         {
-            if (_tabControl.SelectedItem is BrowserTab currentTab)
+            if (_tabControl.SelectedItem is BrowserTabViewModel selectedTab)
             {
-                currentTab.Navigate(url);
+                selectedTab.Navigate(url);
             }
-        }
-
-        public BrowserTab GetCurrentTab()
-        {
-            return _tabControl.SelectedItem as BrowserTab;
         }
     }
 }
