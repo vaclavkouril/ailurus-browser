@@ -30,9 +30,10 @@ namespace Ailurus
             if (urlBox != null && Uri.TryCreate(urlBox.Text, UriKind.Absolute, out var uri))
             {
                 var viewModel = DataContext as MainWindowViewModel;
-                if (viewModel != null && viewModel.SelectedTab != null)
+                if (viewModel != null && viewModel.SelectedTab?.Content is CefGlueBrowserControl browserControl)
                 {
-                    viewModel.SelectedTab.Content = uri.ToString(); // Assuming Content is of type string (URI)
+                    // Use the Navigate method of the CefGlueBrowserControl to navigate to the URL
+                    browserControl.Navigate(uri.ToString());
                 }
             }
         }
