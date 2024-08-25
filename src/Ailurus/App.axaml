@@ -1,26 +1,82 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Ailurus.App">
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Ailurus.App"
+             RequestedThemeVariant="Light">
+    
     <Application.Styles>
-        <Style Selector="TextBlock">
-            <Setter Property="FontFamily" Value="Arial"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="Black"/>
-        </Style>
-        <Style Selector="Button">
-            <Setter Property="FontFamily" Value="Arial"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="Blue"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Width" Value="60"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-        </Style>
+        <!-- Base Fluent Theme with Light Mode -->
+        <FluentTheme />
+
+        <!-- Custom Global Styles -->
+
+        <!-- Custom TextBox Style -->
         <Style Selector="TextBox">
-            <Setter Property="FontFamily" Value="Arial"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Background" Value="LightGray"/>
+            <Setter Property="Background" Value="#FFFFFF" /> <!-- White Background -->
+            <Setter Property="Foreground" Value="#333333" /> <!-- Dark Gray Text -->
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="BorderBrush" Value="#E07A5F" /> <!-- Soft Red/Orange Border -->
+            <Setter Property="BorderThickness" Value="2" />
+            <!-- <Setter Property="WatermarkBrush" Value="#999999" />  Light Gray Watermark -->
+            <Setter Property="Width" Value="600" />
+        </Style>
+
+        <!-- Custom Button Style -->
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#E07A5F" /> <!-- Soft Red/Orange Background -->
+            <Setter Property="Foreground" Value="#FFFFFF" /> <!-- White Text -->
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="100" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            
+        </Style>
+
+        <!-- Custom Label Style -->
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="#333333" /> <!-- Dark Gray Text -->
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Padding" Value="10" />
+        </Style>
+
+        <!-- Custom Window Style -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#F4F1DE" /> <!-- Light Beige Background -->
+            <Setter Property="Padding" Value="10" />
+        </Style>
+
+        <!-- ScrollViewer Style for Modern Look -->
+        <Style Selector="ScrollViewer">
+            <Setter Property="Background" Value="#FFFFFF" /> <!-- White Background -->
+            <Setter Property="Padding" Value="10" />
+        </Style>
+
+        <!-- Custom Tab Control Style -->
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="#FFFFFF" /> <!-- White Background -->
+            <Setter Property="Foreground" Value="#333333" /> <!-- Dark Gray Text -->
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+
+        <!-- TabItem Style -->
+        <Style Selector="TabItem">
+            <Setter Property="Background" Value="#F4F1DE" /> <!-- Light Beige Background -->
+            <Setter Property="Foreground" Value="#333333" /> <!-- Dark Gray Text -->
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="FontWeight" Value="Bold" />
         </Style>
     </Application.Styles>
 </Application>
