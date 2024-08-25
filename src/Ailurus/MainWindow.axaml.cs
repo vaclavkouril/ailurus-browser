@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
 using Ailurus.ViewModels;
+using Avalonia.Markup.Xaml;
 
 
 namespace Ailurus
@@ -11,7 +12,7 @@ namespace Ailurus
     {
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent(true);
             
             // Assuming DataContext is set in XAML
             var viewModel = DataContext as MainWindowViewModel;
@@ -22,8 +23,9 @@ namespace Ailurus
 
             // Open a default tab on startup
             viewModel.AddNewTabCommand.Execute().Subscribe();
-        }
-
+        } 
+        
+        /*
         private void GoButton_Click(object sender, RoutedEventArgs e)
         {
             var urlBox = this.FindControl<TextBox>("urlBox");
@@ -42,6 +44,6 @@ namespace Ailurus
         {
             var viewModel = DataContext as MainWindowViewModel;
             viewModel?.AddNewTabCommand.Execute().Subscribe();
-        }
+        }*/
     }
 }

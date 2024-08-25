@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using Xilium.CefGlue;
@@ -21,7 +22,7 @@ namespace Ailurus
                 InitializeCef(args);
 
                 Console.WriteLine("CEF Initialized, starting Avalonia...");
-
+                
                 BuildAvaloniaApp()
                     .StartWithClassicDesktopLifetime(args);
 
@@ -57,7 +58,8 @@ namespace Ailurus
                 ResourcesDirPath = cefBinaryPath,
                 LogSeverity = CefLogSeverity.Verbose,
                 LogFile = "cef.log",
-                CachePath = System.IO.Path.Combine(cefBinaryPath, "cache") 
+                CachePath = System.IO.Path.Combine(cefBinaryPath, "cache"),
+                CommandLineArgsDisabled = false
             };
 
             CefRuntimeLoader.Initialize();
@@ -72,9 +74,11 @@ namespace Ailurus
         protected override void OnBeforeCommandLineProcessing(string processType, CefCommandLine commandLine)
         {
             commandLine.AppendSwitch("no-sandbox");
-            commandLine.AppendSwitch("disable-setuid-sandbox");
-            commandLine.AppendSwitch("disable-gpu");
-            commandLine.AppendSwitch("disable-software-rasterizer");
+            commandLine.AppendSwitch("disable-gpu-driver-bug-workarounds");
+            commandLine.AppendSwitch("log-severity", "verbose");
+            commandLine.AppendSwitch("enable-logging");
+            commandLine.AppendSwitch("v", "1"); // Enable verbose logging
         }
+
     }
 }

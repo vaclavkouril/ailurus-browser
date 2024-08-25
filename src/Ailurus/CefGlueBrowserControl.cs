@@ -1,9 +1,9 @@
+using System;
 using Avalonia.Controls;
 using Xilium.CefGlue;
 using Xilium.CefGlue.Avalonia;
 using Ailurus.ViewModels;
 using Xilium.CefGlue.Common.Events;
-using System;
 
 namespace Ailurus
 {
@@ -11,7 +11,7 @@ namespace Ailurus
     {
         private AvaloniaCefBrowser _browser;
         private BrowserTabViewModel _tabViewModel;
-
+        
         public CefGlueBrowserControl()
         {
             _browser = new AvaloniaCefBrowser();
@@ -28,7 +28,7 @@ namespace Ailurus
         /// </summary>
         public void Initialize(BrowserTabViewModel tabViewModel)
         {
-            _tabViewModel = tabViewModel;
+            _tabViewModel = tabViewModel ?? throw new ArgumentNullException(nameof(tabViewModel));
         }
 
         /// <summary>
@@ -37,6 +37,7 @@ namespace Ailurus
         /// <param name="url">The URL to navigate to.</param>
         public void Navigate(string url)
         {
+            EnsureInitialized();
             _browser.Address = url;
         }
 
@@ -45,6 +46,7 @@ namespace Ailurus
         /// </summary>
         public void Reload()
         {
+            EnsureInitialized();
             _browser.Reload();
         }
 
@@ -53,6 +55,7 @@ namespace Ailurus
         /// </summary>
         public void GoBack()
         {
+            EnsureInitialized();
             if (_browser.CanGoBack)
             {
                 _browser.GoBack();
@@ -64,6 +67,7 @@ namespace Ailurus
         /// </summary>
         public void GoForward()
         {
+            EnsureInitialized();
             if (_browser.CanGoForward)
             {
                 _browser.GoForward();
@@ -75,8 +79,10 @@ namespace Ailurus
         /// </summary>
         private void OnLoadingStateChanged(object sender, LoadingStateChangeEventArgs e)
         {
-            // Example: Update the tab's IsLoading property
-            _tabViewModel.IsLoading = e.IsLoading;
+            if (_tabViewModel != null)
+            {
+                _tabViewModel.IsLoading = e.IsLoading;
+            }
         }
 
         /// <summary>
@@ -84,8 +90,10 @@ namespace Ailurus
         /// </summary>
         private void OnAddressChanged(object sender, string address)
         {
-            // Update the tab's URL property
-            _tabViewModel.Url = address;
+            if (_tabViewModel != null)
+            {
+                _tabViewModel.Url = address;
+            }
         }
 
         /// <summary>
@@ -93,8 +101,20 @@ namespace Ailurus
         /// </summary>
         private void OnTitleChanged(object sender, string title)
         {
-            // Update the tab's title
-            _tabViewModel.Header = title;
+            if (_tabViewModel != null)
+            {
+                _tabViewModel.Header = title;
+            }
+        }
+
+        /// <summary>
+        /// Handles navigation errors.
+        /// </summary>
+        private void OnNavigationError(object sender, LoadErrorEventArgs e)
+        {
+            // Handle navigation errors, like displaying an error page or message.
+            // This is a placeholder; you can customize it as needed.
+            Console.WriteLine($"Navigation error: {e.ErrorCode}, {e.ErrorText}");
         }
 
         /// <summary>
@@ -102,9 +122,20 @@ namespace Ailurus
         /// </summary>
         public void SwitchTab(BrowserTabViewModel tabViewModel)
         {
-            // Logic to switch to the selected tab
+            EnsureInitialized();
             _tabViewModel = tabViewModel;
             _browser.Address = tabViewModel.Url;
+        }
+
+        /// <summary>
+        /// Ensures the control is initialized before performing operations.
+        /// </summary>
+        private void EnsureInitialized()
+        {
+            if (_tabViewModel == null)
+            {
+                throw new InvalidOperationException("CefGlueBrowserControl must be initialized with a BrowserTabViewModel before use.");
+            }
         }
     }
 }

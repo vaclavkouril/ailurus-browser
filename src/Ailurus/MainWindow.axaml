@@ -13,28 +13,38 @@
 
     <Window.Styles>
         <Style Selector="Button#myBtn">
-            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Foreground" Value="White" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="#E07A5F" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Width" Value="100" />
         </Style>
         <Style Selector="TextBox#urlBox">
-            <Setter Property="Background" Value="DarkGray" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Padding" Value="5" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#D1D1D1" />
+            <Setter Property="MinWidth" Value="150" />
         </Style>
-        <Style Selector="Button#goBtn">
+        <Style Selector="Button#goBtn, Button#settingsBtn, Button#refreshBtn">
             <Setter Property="Background" Value="Black" />
             <Setter Property="Foreground" Value="WhiteSmoke" />
             <Setter Property="Padding" Value="5" />
             <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Margin" Value="5,0,5,0" />
         </Style>
     </Window.Styles>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/> <!-- Make the column with tabs wider -->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -44,29 +54,44 @@
         </Grid.RowDefinitions>
 
         <!-- Header Section -->
-        <DockPanel Grid.Row="0" Grid.ColumnSpan="2" Background="Gray" >
-            <Rectangle Fill="Black" Width="40" Height="40" DockPanel.Dock="Left" Margin="5,0"/>
-            <Label Content="AILURUS BROWSER" Background="Orange" Height="40" VerticalAlignment="Center" Padding="10" Margin="5,0" DockPanel.Dock="Left"/>
-            <TextBox x:Name="urlBox" Width="400" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0" DockPanel.Dock="Left"/>
-            <Button x:Name="goBtn" Content="Go" Width="50" Command="{Binding GoCommand}" Margin="5,0" DockPanel.Dock="Right"/>
+        <DockPanel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Background="Gray" Height="50">
+            <Rectangle Fill="Black" Width="40" Height="40" DockPanel.Dock="Left"/>
+            <Label Content="AILURUS BROWSER" Background="Orange" VerticalAlignment="Center" Padding="10" Margin="5,0" DockPanel.Dock="Left"/>
+            <TextBox x:Name="urlBox" AcceptsReturn="True" Watermark="Enter URL" Text="{Binding Url, Mode=TwoWay}" Margin="5,0" DockPanel.Dock="Left">
+                <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding GoCommand}" />
+                </TextBox.KeyBindings>
+            </TextBox>
+            <Button x:Name="goBtn" Content="Go" Width="50" Command="{Binding GoCommand}" />
+            <Button x:Name="refreshBtn" Content="Refresh" Width="70" />
+            <Button x:Name="settingsBtn" Content="Settings" Width="70" />
         </DockPanel>
 
         <!-- Tab Column with ScrollViewer -->
-        <Grid Grid.Row="1" Grid.Column="0" Background="#EEEEEE">
+        <Grid Grid.Row="1" Grid.Column="0" Background="#2E2E2E"> <!-- Set the entire column to dark gray -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
             <!-- Scrollable Tabs List -->
-            <ScrollViewer Grid.Row="0">
+            <ScrollViewer Grid.Row="0" Background="#333333">
                 <ItemsControl ItemsSource="{Binding Tabs}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:BrowserTabViewModel">
-                            <DockPanel>
-                                <TextBlock Text="{Binding Header}" VerticalAlignment="Center" Margin="5"/>
-                                <Button Content="x" Command="{Binding CloseTabCommand}" CommandParameter="{Binding .}"
-                                        Width="20" Height="20" Margin="5" HorizontalAlignment="Right"/>
+                            <DockPanel Margin="1" Background="#333333">
+                                <TextBlock Text="{Binding Header}" VerticalAlignment="Center" Margin="5" Foreground="White"/>
+                                <Button Content="x" Command="{Binding CloseTabCommand}"
+                                        Width="20" Height="20" Margin="5" HorizontalAlignment="Right" Foreground="White" Background="#E07A5F">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover">
+                                            <Setter Property="Background" Value="Cornsilk"/>
+                                        </Style>
+                                    </Button.Styles>
+                                </Button>
                             </DockPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -74,10 +99,10 @@
             </ScrollViewer>
 
             <!-- New Tab Button -->
-            <Button Grid.Row="1" x:Name="myBtn" Content="+" Command="{Binding AddNewTabCommand}" HorizontalAlignment="Center" Margin="5"/>
+            <Button Grid.Row="1" x:Name="myBtn" Content="+" Command="{Binding AddNewTabCommand}" HorizontalAlignment="Center" Margin="10" Foreground="White" Background="#E07A5F"/>
         </Grid>
 
         <!-- Browser Content -->
-        <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding SelectedTab.Content}" />
+        <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding SelectedTab.Content}" Background="White"/>
     </Grid>
 </Window>
