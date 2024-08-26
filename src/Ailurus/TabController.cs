@@ -1,7 +1,5 @@
 using Ailurus.ViewModels;
 using Avalonia.Controls;
-using ReactiveUI;
-using System;
 using System.Linq;
 
 namespace Ailurus
@@ -17,7 +15,7 @@ namespace Ailurus
 
         public void AddNewTab(string initialUrl = "https://www.google.com")
         {
-            var browserControl = new CefGlueBrowserControl(); 
+            var browserControl = new CefGlueBrowserControl();
             var newTab = new BrowserTabViewModel(_mainWindowViewModel)
             {
                 Header = "New Tab",
@@ -31,8 +29,9 @@ namespace Ailurus
             _mainWindowViewModel.SelectedTab = newTab;
 
             // Navigate to the initial URL if provided
-            newTab.Navigate(initialUrl);
+            newTab.NavigateAsync(initialUrl).ConfigureAwait(false);
         }
+
         public void CloseTab(BrowserTabViewModel tab)
         {
             if (_mainWindowViewModel.Tabs.Contains(tab))
@@ -54,14 +53,14 @@ namespace Ailurus
 
         public void NavigateCurrentTab(string url)
         {
-            _mainWindowViewModel.SelectedTab?.Navigate(url);
+            _mainWindowViewModel.SelectedTab?.NavigateAsync(url).ConfigureAwait(false);
         }
 
         public void GoBack()
         {
             if (_mainWindowViewModel.SelectedTab?.Content is CefGlueBrowserControl browser)
             {
-                browser.GoBack();
+                browser.GoBackAsync().ConfigureAwait(false);
             }
         }
 
@@ -69,7 +68,7 @@ namespace Ailurus
         {
             if (_mainWindowViewModel.SelectedTab?.Content is CefGlueBrowserControl browser)
             {
-                browser.GoForward();
+                browser.GoForwardAsync().ConfigureAwait(false);
             }
         }
 
@@ -77,7 +76,7 @@ namespace Ailurus
         {
             if (_mainWindowViewModel.SelectedTab?.Content is CefGlueBrowserControl browser)
             {
-                browser.Reload();
+                browser.ReloadAsync().ConfigureAwait(false);
             }
         }
     }

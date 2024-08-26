@@ -53,6 +53,7 @@ namespace Ailurus
 
             var cefSettings = new CefSettings
             {
+                WindowlessRenderingEnabled = true,
                 BrowserSubprocessPath = System.IO.Path.Combine(cefBinaryPath, "chrome-sandbox"),
                 LocalesDirPath = System.IO.Path.Combine(cefBinaryPath, "locales"),
                 ResourcesDirPath = cefBinaryPath,
@@ -73,11 +74,19 @@ namespace Ailurus
     {
         protected override void OnBeforeCommandLineProcessing(string processType, CefCommandLine commandLine)
         {
+            //
             commandLine.AppendSwitch("no-sandbox");
-            commandLine.AppendSwitch("disable-gpu-driver-bug-workarounds");
-            commandLine.AppendSwitch("log-severity", "verbose");
-            commandLine.AppendSwitch("enable-logging");
-            commandLine.AppendSwitch("v", "1"); // Enable verbose logging
+            commandLine.AppendSwitch("disable-gpu");
+            commandLine.AppendSwitch("disable-software-rasterizer");
+            commandLine.AppendSwitch("disable-gpu-compositing");
+            /* *
+            commandLine.AppendSwitch("enable-gpu");
+            commandLine.AppendSwitch("enable-gpu-rasterization");
+            commandLine.AppendSwitch("enable-zero-copy");
+            commandLine.AppendSwitch("disable-software-rasterizer");  // Disable software fallback
+            commandLine.AppendSwitch("ignore-gpu-blocklist");  // Ignore GPU blocklist
+            commandLine.AppendSwitch("enable-native-gpu-memory-buffers");
+            */
         }
 
     }

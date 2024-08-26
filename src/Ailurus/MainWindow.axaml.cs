@@ -4,12 +4,15 @@ using Avalonia.Interactivity;
 using Avalonia.ReactiveUI;
 using Ailurus.ViewModels;
 using Avalonia.Markup.Xaml;
-
+using Avalonia.VisualTree;
+using Xilium.CefGlue.Avalonia;
 
 namespace Ailurus
 {
     public partial class MainWindow : Window
     {
+        private AvaloniaCefBrowser _browser;
+        
         public MainWindow()
         {
             InitializeComponent(true);
@@ -23,7 +26,45 @@ namespace Ailurus
 
             // Open a default tab on startup
             viewModel.AddNewTabCommand.Execute().Subscribe();
+            
+            InitializeBrowser();
         } 
+        
+        private void InitializeBrowser()
+        {
+            _browser = new AvaloniaCefBrowser
+            {
+                
+            };
+            _browser.ShowDeveloperTools();
+
+            var panel = this.FindControl<Grid>("MainPanel"); // Use Grid instead of Panel
+            if (panel != null)
+            {
+                panel.Children.Add(_browser);
+                panel.InvalidateMeasure();
+                panel.InvalidateArrange();
+
+                _browser.Address = "https://www.google.com";
+            }
+
+            // Subscribe to the LayoutUpdated event to adjust browser size
+            this.LayoutUpdated += OnLayoutUpdated;
+        }
+
+        private void OnLayoutUpdated(object sender, EventArgs e)
+        {
+            if (_browser != null)
+            {
+                var panel = this.FindControl<Grid>("MainPanel");
+                if (panel != null)
+                {
+                    // Adjust the browser size to match the panel's size
+                    _browser.Width = panel.Bounds.Width;
+                    _browser.Height = panel.Bounds.Height;
+                }
+            }
+        }
         
         /*
         private void GoButton_Click(object sender, RoutedEventArgs e)
