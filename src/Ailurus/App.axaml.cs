@@ -1,38 +1,41 @@
-using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Ailurus.ViewModels;
 
 namespace Ailurus
 {
-    public partial class App : Application
+    public class App : Application
     {
+        private bool _isAnonymousMode;
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
         }
 
-        
         public override void OnFrameworkInitializationCompleted()
         {
-            try
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                Console.WriteLine("Framework Initialization started.");
+                ISessionManager sessionManager = _isAnonymousMode
+                    ? new AnonymousSessionManager()
+                    : new SessionManager();
 
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    Console.WriteLine("Setting up MainWindow.");
-                    desktop.MainWindow = new MainWindow();
-                }
+                var mainWindowViewModel = new MainWindowViewModel(sessionManager);
 
-                base.OnFrameworkInitializationCompleted();
-                Console.WriteLine("Framework Initialization completed.");
+                desktop.MainWindow = new MainWindow(mainWindowViewModel);
+
+                desktop.Exit += async (_, __) => await mainWindowViewModel.SaveSessionAsync();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception during Avalonia Framework Initialization: " + ex);
-                throw;
-            }
+
+            base.OnFrameworkInitializationCompleted();
+        }
+
+        public void EnableAnonymousMode()
+        {
+            _isAnonymousMode = true;
         }
     }
+
 }

@@ -8,10 +8,6 @@
         Background="White"
         x:DataType="viewModels:MainWindowViewModel">
 
-    <Window.DataContext>
-        <viewModels:MainWindowViewModel />
-    </Window.DataContext>
-
     <Window.Resources>
         <converters:SelectedTabConverter x:Key="SelectedTabConverter"/>
     </Window.Resources>
@@ -86,7 +82,7 @@
             <Button Grid.Column="4" x:Name="goBtn" Content="Go" Width="50" Command="{Binding GoCommand}" />
             <Button Grid.Column="5" x:Name="refreshBtn" Content="Refresh" Width="70" Command="{Binding ReloadCommand}" />
             <Button Grid.Column="6" x:Name="settingsBtn" Content="Settings" Width="70" />
-            <Button Grid.Column="7" Content="Open DevTools" Click="OnOpenDevTools"/>
+            <Button Grid.Column="7" Content="Open DevTools" />
         </Grid>
 
         <!-- Tab Column with ScrollViewer -->
