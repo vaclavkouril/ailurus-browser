@@ -1,9 +1,7 @@
-using System;
 using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Threading.Tasks;
-using Avalonia;
 using Xilium.CefGlue.Avalonia;
 
 namespace Ailurus.ViewModels
@@ -18,43 +16,77 @@ namespace Ailurus.ViewModels
             get => _selectedTab;
             set
             {
-                this.RaiseAndSetIfChanged(ref _selectedTab, value);
-                foreach (var tab in Tabs)
+                if (_selectedTab != value)
                 {
-                    tab.IsSelected = tab == _selectedTab;
+                    _selectedTab?.SetIsSelected(false);
+                    this.RaiseAndSetIfChanged(ref _selectedTab, value);
+                    _selectedTab?.SetIsSelected(true);
+                    this.RaisePropertyChanged(nameof(BrowserContent));
+
+                    UpdateCommands(); // Update the commands when the selected tab changes
                 }
             }
         }
 
-        private string _url;
-        public string Url
+        // Property to bind the browser content to the UI
+        public AvaloniaCefBrowser? BrowserContent => SelectedTab?.Browser;
+
+        private string? _url;
+        public string? Url
         {
-            get => _url;
-            set => this.RaiseAndSetIfChanged(ref _url, value);
+            get => _selectedTab.Url;
+            set => _selectedTab.Url = value;
         }
 
         public ReactiveCommand<Unit, Unit> AddNewTabCommand { get; }
-        public ReactiveCommand<Unit, Unit> GoCommand { get; }
+        public ReactiveCommand<Unit, Unit> GoCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> BackCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> ForwardCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> ReloadCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> OpenDevToolsCommand { get; private set; }
 
         public MainWindowViewModel()
         {
             AddNewTabCommand = ReactiveCommand.Create(AddNewTab);
-            GoCommand = ReactiveCommand.CreateFromTask(async () => await GoToUrlAsync());
-            Browser = new AvaloniaCefBrowser();
-            Console.WriteLine(Browser.IsVisible);
-            Browser.Address = "https://www.google.com";
+            InitializeCommands();
         }
-        public AvaloniaCefBrowser Browser { get; set; }
+
+        private void InitializeCommands()
+        {
+            GoCommand = ReactiveCommand.CreateFromTask(GoToUrlAsync);
+            BackCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.GoBack());
+            ForwardCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.GoForward());
+            ReloadCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.Reload());
+            OpenDevToolsCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.OpenDevTools());
+        }
+
+        private void UpdateCommands()
+        {
+            GoCommand = ReactiveCommand.CreateFromTask(GoToUrlAsync);
+            BackCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.GoBack());
+            ForwardCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.GoForward());
+            ReloadCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.Reload());
+            OpenDevToolsCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.OpenDevTools());
+
+            // Notify that the commands have been updated
+            this.RaisePropertyChanged(nameof(GoCommand));
+            this.RaisePropertyChanged(nameof(BackCommand));
+            this.RaisePropertyChanged(nameof(ForwardCommand));
+            this.RaisePropertyChanged(nameof(ReloadCommand));
+            this.RaisePropertyChanged(nameof(OpenDevToolsCommand));
+        }
+
         private void AddNewTab()
         {
-            var newTab = new BrowserTabViewModel(this) { Header = "New Tab" };
+            var newTab = new BrowserTabViewModel(this);
             Tabs.Add(newTab);
+            // Select the new tab
             SelectedTab = newTab;
         }
 
         private async Task GoToUrlAsync()
         {
-            if (SelectedTab != null)
+            if (SelectedTab != null && !string.IsNullOrWhiteSpace(Url))
             {
                 await SelectedTab.NavigateAsync(Url);
             }

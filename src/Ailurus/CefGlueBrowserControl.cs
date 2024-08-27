@@ -1,130 +1,78 @@
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Threading;
-using Xilium.CefGlue;
 using Xilium.CefGlue.Avalonia;
 using Ailurus.ViewModels;
-using Xilium.CefGlue.Common.Events;
 
 namespace Ailurus
 {
     public class CefGlueBrowserControl : Control
     {
-        private AvaloniaCefBrowser? _browser; // Marked as nullable
-        private BrowserTabViewModel? _tabViewModel; // Marked as nullable
-        private readonly TaskFactory _uiTaskFactory;
-        private bool _isBrowserInitialized = false;
+        private readonly AvaloniaCefBrowser _browser;
 
-        public CefGlueBrowserControl()
+        public CefGlueBrowserControl(AvaloniaCefBrowser browser)
         {
-            _tabViewModel = null;
-            _uiTaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
-            InitializeBrowserAsync();
+            _browser = browser ?? throw new ArgumentNullException(nameof(browser));
+            InitializeControl();
         }
 
-        private void InitializeBrowserAsync()
+        private void InitializeControl()
         {
-            _uiTaskFactory.StartNew(() =>
-            {
-                _browser = new AvaloniaCefBrowser();
-                _browser.LoadingStateChange += OnLoadingStateChanged;
-                _browser.AddressChanged += OnAddressChanged;
-                _browser.TitleChanged += OnTitleChanged;
-
-                LogicalChildren.Add(_browser);
-                _isBrowserInitialized = true; // Mark the browser as initialized
-            });
-        }
-
-        public void Initialize(BrowserTabViewModel tabViewModel)
-        {
-            _tabViewModel = tabViewModel ?? throw new ArgumentNullException(nameof(tabViewModel));
+            LogicalChildren.Add(_browser); // Add the browser as a visual child
         }
 
         public async Task NavigateAsync(string url)
         {
-            try
-            {
-                await EnsureInitializedAsync();
-                await _uiTaskFactory.StartNew(() => _browser!.Address = url); // Use null-forgiving operator
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Navigation failed: {ex.Message}");
-            }
-        }
-
-        public async Task ReloadAsync()
-        {
-            await EnsureInitializedAsync();
-            await _uiTaskFactory.StartNew(() => _browser!.Reload()); // Use null-forgiving operator
-        }
-
-        public async Task GoBackAsync()
-        {
-            await EnsureInitializedAsync();
-            await _uiTaskFactory.StartNew(() =>
-            {
-                if (_browser!.CanGoBack) _browser.GoBack(); // Use null-forgiving operator
-            });
-        }
-
-        public async Task GoForwardAsync()
-        {
-            await EnsureInitializedAsync();
-            await _uiTaskFactory.StartNew(() =>
-            {
-                if (_browser!.CanGoForward) _browser.GoForward(); // Use null-forgiving operator
-            });
-        }
-
-        private void OnLoadingStateChanged(object sender, LoadingStateChangeEventArgs e)
-        {
-            if (_tabViewModel != null)
-            {
-                Dispatcher.UIThread.Post(() => _tabViewModel.IsLoading = e.IsLoading);
-            }
-        }
-
-        private void OnAddressChanged(object sender, string address)
-        {
-            if (_tabViewModel != null)
-            {
-                Dispatcher.UIThread.Post(() => _tabViewModel.Url = address);
-            }
-        }
-
-        private void OnTitleChanged(object sender, string title)
-        {
-            if (_tabViewModel != null)
-            {
-                Dispatcher.UIThread.Post(() => _tabViewModel.Header = title);
-            }
-        }
-
-        private void OnNavigationError(object sender, LoadErrorEventArgs e)
-        {
-            Console.WriteLine($"Navigation error: {e.ErrorCode}, {e.ErrorText}");
-        }
-
-        public async Task SwitchTabAsync(BrowserTabViewModel tabViewModel)
-        {
-            await EnsureInitializedAsync();
-            await _uiTaskFactory.StartNew(() =>
-            {
-                _tabViewModel = tabViewModel;
-                _browser!.Address = tabViewModel.Url; // Use null-forgiving operator
-            });
-        }
-
-        private async Task EnsureInitializedAsync()
-        {
-            if (_tabViewModel == null || !_isBrowserInitialized || _browser == null)
-            {
-                throw new InvalidOperationException("CefGlueBrowserControl must be initialized with a BrowserTabViewModel and the browser must be fully loaded before use.");
-            }
+            string normalizedUrl = NormalizeUrl(url);
+            _browser.Address = normalizedUrl;
             await Task.CompletedTask;
+        }
+
+        public void Reload()
+        {
+            _browser.Reload();
+        }
+
+        public void GoBack()
+        {
+            if (_browser.CanGoBack) _browser.GoBack();
+        }
+
+        public void GoForward()
+        {
+            if (_browser.CanGoForward) _browser.GoForward();
+        }
+
+        public void OpenDevTools()
+        {
+            _browser.ShowDeveloperTools();
+        }
+
+        public string Title { get => _browser.Title; }
+        
+        private string NormalizeUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return "about:blank";
+            }
+
+            url = url.Trim();
+
+            if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                // If the URL does not start with http:// or https://, add https:// by default.
+                url = "https://" + url;
+            }
+
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                // If the URL is not well-formed, assume it's a search query.
+                url = "https://www.google.com/search?q=" + Uri.EscapeDataString(url);
+            }
+
+            return url;
         }
     }
 }
