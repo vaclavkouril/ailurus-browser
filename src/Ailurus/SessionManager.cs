@@ -18,8 +18,8 @@ namespace Ailurus
         {
             var sessionData = tabs.Select(tab => new TabSessionData
             {
-                Url = tab.Url ?? string.Empty,
-                Title = tab.Header ?? string.Empty
+                Url = tab.BrowserControl.CurrentUrl, // Use the actual URL from the control
+                Title = tab.Header
             }).ToList();
 
             var json = JsonSerializer.Serialize(sessionData);
@@ -27,6 +27,7 @@ namespace Ailurus
 
             await SaveCookiesAsync();
         }
+
         public async Task<IEnumerable<BrowserTabViewModel>> LoadSessionAsync(MainWindowViewModel mainViewModel)
         {
             if (!File.Exists(SessionFilePath))
@@ -37,13 +38,12 @@ namespace Ailurus
 
             await LoadCookiesAsync();
 
-            return sessionData.Select(data => 
+            return sessionData.Select(data =>
             {
                 var tab = new BrowserTabViewModel(mainViewModel)
                 {
                     Url = data.Url
                 };
-                // Start navigation to the restored URL
                 tab.NavigateAsync(data.Url).ConfigureAwait(false);
                 return tab;
             }).ToList();
@@ -56,7 +56,9 @@ namespace Ailurus
 
             await Task.Run(() =>
             {
-                cookiesManager.VisitAllCookies(new CookieVisitor(cookiesList));
+                var visitor = new CookieVisitor(cookiesList);
+                cookiesManager.VisitAllCookies(visitor);
+                visitor.WaitForCompletion();
             });
 
             var json = JsonSerializer.Serialize(cookiesList);
@@ -77,13 +79,16 @@ namespace Ailurus
             {
                 var cefCookie = new CefCookie
                 {
-                    Domain = cookie.Domain ?? string.Empty,
-                    Name = cookie.Name ?? string.Empty,
-                    Value = cookie.Value ?? string.Empty,
-                    Path = cookie.Path ?? string.Empty,
+                    Domain = cookie.Domain,
+                    Name = cookie.Name,
+                    Value = cookie.Value,
+                    Path = cookie.Path,
+                    Secure = cookie.Secure,
+                    HttpOnly = cookie.HttpOnly,
                     Expires = cookie.Expires.HasValue ? DateTimeToCefBaseTime(cookie.Expires.Value) : (CefBaseTime?)null
                 };
 
+                // Set the cookie back to the manager
                 cookiesManager.SetCookie(cookie.Url ?? string.Empty, cefCookie, null);
             }
         }
@@ -96,17 +101,20 @@ namespace Ailurus
 
         private class CookieData
         {
-            public string Name { get; set; } = string.Empty;
-            public string Value { get; set; } = string.Empty;
-            public string Domain { get; set; } = string.Empty;
-            public string Path { get; set; } = string.Empty;
-            public string Url { get; set; } = string.Empty;
-            public DateTime? Expires { get; set; }
+            public string Name { get; init; } = string.Empty;
+            public string Value { get; init; } = string.Empty;
+            public string Domain { get; init; } = string.Empty;
+            public string Path { get; init; } = string.Empty;
+            public string Url { get; init; } = string.Empty;
+            public DateTime? Expires { get; init; }
+            public bool Secure { get; init; } = false;
+            public bool HttpOnly { get; init; } = false;
         }
 
         private class CookieVisitor : CefCookieVisitor
         {
             private readonly List<CookieData> _cookiesList;
+            private readonly TaskCompletionSource<bool> _completionSource = new();
 
             public CookieVisitor(List<CookieData> cookiesList)
             {
@@ -124,14 +132,25 @@ namespace Ailurus
                     Domain = cookie.Domain ?? string.Empty,
                     Path = cookie.Path ?? string.Empty,
                     Url = $"{cookie.Domain}{cookie.Path}",
-                    Expires = cookie.Expires.HasValue ? CefBaseTimeToDateTime(cookie.Expires.Value) : null
+                    Expires = cookie.Expires.HasValue ? CefBaseTimeToDateTime(cookie.Expires.Value) : null,
+                    Secure = cookie.Secure,
+                    HttpOnly = cookie.HttpOnly
                 });
+
+                if (count == total - 1)
+                {
+                    _completionSource.SetResult(true);
+                }
 
                 return true;
             }
-        }
 
-        // Convert DateTime to CefBaseTime
+            public void WaitForCompletion()
+            {
+                _completionSource.Task.Wait();
+            }
+        }
+        
         private static CefBaseTime DateTimeToCefBaseTime(DateTime dateTime)
         {
             var cefTime = new CefTime(dateTime.ToUniversalTime());
@@ -141,8 +160,7 @@ namespace Ailurus
             }
             throw new InvalidOperationException("Failed to convert DateTime to CefBaseTime.");
         }
-
-        // Convert CefBaseTime to DateTime
+        
         private static DateTime CefBaseTimeToDateTime(CefBaseTime cefBaseTime)
         {
             if (cefBaseTime.UtcExplode(out CefTime cefTime))

@@ -6,6 +6,7 @@ namespace Ailurus
     public interface IHistoryManager
     {
         Task AddToHistoryAsync(string url);
-        Task<IEnumerable<string>> GetHistoryAsync();
+        Task<IEnumerable<HistoryItem>> GetHistoryAsync();
+        Task DeleteHistoryAsync();
     }
 }

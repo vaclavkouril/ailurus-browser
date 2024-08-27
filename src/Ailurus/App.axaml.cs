@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Ailurus.ViewModels;
+using System.Threading.Tasks;
+using Xilium.CefGlue;
 
 namespace Ailurus
 {
@@ -22,11 +24,19 @@ namespace Ailurus
                     ? new AnonymousSessionManager()
                     : new SessionManager();
 
-                var mainWindowViewModel = new MainWindowViewModel(sessionManager);
+                IHistoryManager historyManager = _isAnonymousMode
+                    ? new AnonymousHistoryManager()
+                    : new HistoryManager();
+
+                var mainWindowViewModel = new MainWindowViewModel(sessionManager, historyManager);
 
                 desktop.MainWindow = new MainWindow(mainWindowViewModel);
 
-                desktop.Exit += async (_, __) => await mainWindowViewModel.SaveSessionAsync();
+                desktop.Exit += async (_, __) =>
+                {
+                    await mainWindowViewModel.SaveSessionAsync();
+                    await ShutdownApplicationAsync();
+                };
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -36,6 +46,12 @@ namespace Ailurus
         {
             _isAnonymousMode = true;
         }
-    }
 
+        private async Task ShutdownApplicationAsync()
+        {
+            // Properly shutdown CefGlue
+            CefRuntime.Shutdown();
+            await Task.CompletedTask;
+        }
+    }
 }

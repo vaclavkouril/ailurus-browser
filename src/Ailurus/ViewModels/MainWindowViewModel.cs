@@ -9,6 +9,9 @@ namespace Ailurus.ViewModels
     public class MainWindowViewModel : ReactiveObject
     {
         private readonly ISessionManager _sessionManager;
+        private readonly IHistoryManager _historyManager;
+
+        private readonly string _defaultUrl = $"http://www.google.com";
 
         public ObservableCollection<BrowserTabViewModel> Tabs { get; } = new ObservableCollection<BrowserTabViewModel>();
 
@@ -20,11 +23,24 @@ namespace Ailurus.ViewModels
             {
                 if (_selectedTab != value)
                 {
+                    if (_selectedTab != null)
+                    {
+                        _selectedTab.PropertyChanged -= OnSelectedTabUrlChanged;
+                        _selectedTab.PropertyChanged -= OnSelectedTabTitleChanged;
+                    }
+
                     _selectedTab?.SetIsSelected(false);
                     this.RaiseAndSetIfChanged(ref _selectedTab, value);
                     _selectedTab?.SetIsSelected(true);
-                    this.RaisePropertyChanged(nameof(BrowserContent));
 
+                    if (_selectedTab != null)
+                    {
+                        _selectedTab.PropertyChanged += OnSelectedTabUrlChanged;
+                        _selectedTab.PropertyChanged += OnSelectedTabTitleChanged;
+                        UpdateEditableUrl();
+                    }
+
+                    this.RaisePropertyChanged(nameof(BrowserContent));
                     UpdateCommands();
                 }
             }
@@ -32,10 +48,11 @@ namespace Ailurus.ViewModels
 
         public AvaloniaCefBrowser? BrowserContent => SelectedTab?.Browser;
 
-        public string? Url
+        private string? _editableUrl;
+        public string? EditableUrl
         {
-            get => _selectedTab?.Url;
-            set => _selectedTab.Url = value;
+            get => _editableUrl;
+            set => this.RaiseAndSetIfChanged(ref _editableUrl, value);
         }
 
         public ReactiveCommand<Unit, Unit> AddNewTabCommand { get; }
@@ -44,12 +61,16 @@ namespace Ailurus.ViewModels
         public ReactiveCommand<Unit, Unit> ForwardCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> ReloadCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> OpenDevToolsCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> OpenHistoryCommand { get; }
 
-        public MainWindowViewModel(ISessionManager sessionManager)
+        public MainWindowViewModel(ISessionManager sessionManager, IHistoryManager historyManager)
         {
             _sessionManager = sessionManager;
+            _historyManager = historyManager;
 
             AddNewTabCommand = ReactiveCommand.Create(AddNewTab);
+            OpenHistoryCommand = ReactiveCommand.Create(OpenHistoryWindow);
+
             InitializeCommands();
             LoadSessionAsync().ConfigureAwait(false);
         }
@@ -65,12 +86,6 @@ namespace Ailurus.ViewModels
 
         private void UpdateCommands()
         {
-            GoCommand = ReactiveCommand.CreateFromTask(GoToUrlAsync);
-            BackCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.GoBack());
-            ForwardCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.GoForward());
-            ReloadCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.Reload());
-            OpenDevToolsCommand = ReactiveCommand.Create(() => SelectedTab?.BrowserControl.OpenDevTools());
-
             this.RaisePropertyChanged(nameof(GoCommand));
             this.RaisePropertyChanged(nameof(BackCommand));
             this.RaisePropertyChanged(nameof(ForwardCommand));
@@ -83,13 +98,40 @@ namespace Ailurus.ViewModels
             var newTab = new BrowserTabViewModel(this);
             Tabs.Add(newTab);
             SelectedTab = newTab;
+            newTab.NavigateAsync(_defaultUrl).ConfigureAwait(false);
         }
 
         private async Task GoToUrlAsync()
         {
-            if (SelectedTab != null && !string.IsNullOrWhiteSpace(Url))
+            if (SelectedTab != null && !string.IsNullOrWhiteSpace(EditableUrl))
             {
-                await SelectedTab.NavigateAsync(Url);
+                await SelectedTab.NavigateAsync(EditableUrl);
+            }
+        }
+
+        private void UpdateEditableUrl()
+        {
+            if (SelectedTab != null)
+            {
+                EditableUrl = SelectedTab.Url;
+            }
+        }
+
+        private void OnSelectedTabUrlChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(BrowserTabViewModel.Url))
+            {
+                UpdateEditableUrl();
+                _historyManager.AddToHistoryAsync(SelectedTab.Url);
+
+            }
+        }
+        
+        private void OnSelectedTabTitleChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(BrowserTabViewModel.Header))
+            {
+                this.RaisePropertyChanged(nameof(Tabs));
             }
         }
 
@@ -106,8 +148,6 @@ namespace Ailurus.ViewModels
         public async Task SaveSessionAsync()
         {
             await _sessionManager.SaveSessionAsync(Tabs);
-            // Ensure the tab navigates to its stored URL
-            
         }
 
         private async Task LoadSessionAsync()
@@ -116,14 +156,20 @@ namespace Ailurus.ViewModels
             foreach (var tab in tabs)
             {
                 Tabs.Add(tab);
-                // Loading of the tabs from stored url
-                tab.NavigateAsync(tab.Url);
+                await tab.NavigateAsync(tab.Url);
             }
 
             if (Tabs.Count > 0)
             {
                 SelectedTab = Tabs[0];
+                UpdateEditableUrl();
             }
+        }
+
+        private void OpenHistoryWindow()
+        {
+            var historyWindow = new HistoryWindow(_historyManager);
+            historyWindow.Show();
         }
     }
 }

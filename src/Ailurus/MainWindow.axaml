@@ -27,8 +27,10 @@
             <Setter Property="Foreground" Value="Black" />
             <Setter Property="Padding" Value="5" />
             <Setter Property="FontSize" Value="16" />
-            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="CornerRadius" Value="5" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Height" Value="28" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="#D1D1D1" />
             <Setter Property="MinWidth" Value="150" />
@@ -56,7 +58,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header Section -->
-        <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="Gray" Height="50">
+        <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="Gray" Height="50" VerticalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="60"></RowDefinition>
             </Grid.RowDefinitions>
@@ -68,21 +70,27 @@
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             
             <Button Grid.Column="0" x:Name="backBtn" Content="Back" Command="{Binding BackCommand}" Width="60"/>
             <Button Grid.Column="1" x:Name="forwardBtn" Content="Forward" Command="{Binding ForwardCommand}" Width="70"/>
             <Label Grid.Column="2" Content="AILURUS BROWSER" Background="Orange" VerticalAlignment="Center" Padding="10" Margin="5,0"/>
-            <TextBox Grid.Column="3" x:Name="urlBox" AcceptsReturn="False" Watermark="Enter URL" Text="{Binding Url, Mode=TwoWay}" Margin="5,0">
+            <TextBox Grid.Column="3" x:Name="urlBox" AcceptsReturn="False" Watermark="Enter URL" Text="{Binding EditableUrl}" Margin="5,0">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding GoCommand}" />
                 </TextBox.KeyBindings>
             </TextBox>
             <Button Grid.Column="4" x:Name="goBtn" Content="Go" Width="50" Command="{Binding GoCommand}" />
             <Button Grid.Column="5" x:Name="refreshBtn" Content="Refresh" Width="70" Command="{Binding ReloadCommand}" />
-            <Button Grid.Column="6" x:Name="settingsBtn" Content="Settings" Width="70" />
-            <Button Grid.Column="7" Content="Open DevTools" />
+            <Button Grid.Column="6" x:Name="settingsBtn" Content="Settings" Width="70">
+                <Button.Flyout>
+                    <Flyout Placement="Bottom">
+                        <StackPanel>
+                            <Button Content="History" Command="{Binding OpenHistoryCommand}" />
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </Grid>
 
         <!-- Tab Column with ScrollViewer -->

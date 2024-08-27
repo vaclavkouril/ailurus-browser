@@ -1,3 +1,4 @@
+using System;
 using System.Reactive;
 using ReactiveUI;
 using System.Threading.Tasks;
@@ -20,8 +21,15 @@ namespace Ailurus.ViewModels
 
         public string Url
         {
-            get => _url;
-            set => this.RaiseAndSetIfChanged(ref _url, value);
+            get => BrowserControl.CurrentUrl;
+            set
+            {
+                if (_url != value)
+                {
+                    this.RaiseAndSetIfChanged(ref _url, value);
+                    NavigateAsync(value).ConfigureAwait(false);
+                }
+            }
         }
 
         public bool IsLoading
@@ -43,10 +51,9 @@ namespace Ailurus.ViewModels
         public BrowserTabViewModel(MainWindowViewModel mainWindowViewModel)
         {
             Browser = new AvaloniaCefBrowser();
-            Browser.Address = _url;
             BrowserControl = new CefGlueBrowserControl(Browser);
-
-            // Bind the title change event to update the Header
+            
+            Browser.AddressChanged += OnBrowserAddressChanged;
             Browser.TitleChanged += OnBrowserTitleChanged;
 
             CloseTabCommand = ReactiveCommand.Create(() => mainWindowViewModel.CloseTab(this));
@@ -57,18 +64,24 @@ namespace Ailurus.ViewModels
             });
         }
 
+        private void OnBrowserAddressChanged(object sender, string e)
+        {
+            this.RaisePropertyChanged(nameof(Url));
+        }
+
         private void OnBrowserTitleChanged(object sender, string newTitle)
         {
-            Header = string.IsNullOrWhiteSpace(newTitle) ? "New Tab" : newTitle;
+            Header = BrowserControl.Title;
         }
 
         public async Task NavigateAsync(string url)
         {
-            Url = url;
-            await BrowserControl.NavigateAsync(url);
+            if (!string.IsNullOrWhiteSpace(url) && BrowserControl.CurrentUrl != url)
+            {
+                await BrowserControl.NavigateAsync(url);
+            }
         }
 
-        // Method to set IsSelected
         public void SetIsSelected(bool isSelected)
         {
             IsSelected = isSelected;

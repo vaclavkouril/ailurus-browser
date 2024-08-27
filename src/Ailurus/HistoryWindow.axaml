@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:Ailurus.ViewModels"
+        x:Class="Ailurus.HistoryWindow"
+        Title="History"
+        Width="600"
+        Height="400"
+        x:DataType="viewModels:HistoryWindowViewModel">
+
+    <StackPanel>
+        <!-- Header Section -->
+        <TextBlock Text="Browsing History" FontWeight="Bold" FontSize="18" Margin="10"/>
+        <Button Content="Clear History" Command="{Binding ClearHistoryCommand}" HorizontalAlignment="Right" Margin="10"/>
+
+        <!-- History List -->
+        <ItemsControl ItemsSource="{Binding HistoryItems}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:HistoryItemViewModel">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:G}'}" Width="200"/>
+                        <TextBlock Text="{Binding Url}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</Window>

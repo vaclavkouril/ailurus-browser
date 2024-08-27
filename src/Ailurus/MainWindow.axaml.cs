@@ -13,8 +13,7 @@ namespace Ailurus
         {
             InitializeComponent();
             DataContext = viewModel;
-
-            // Open a default tab on startup
+            
             viewModel.AddNewTabCommand.Execute().Subscribe();
         }
     }

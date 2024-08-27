@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Xilium.CefGlue.Avalonia;
-using Ailurus.ViewModels;
 
 namespace Ailurus
 {
@@ -18,7 +17,7 @@ namespace Ailurus
 
         private void InitializeControl()
         {
-            LogicalChildren.Add(_browser); // Add the browser as a visual child
+            LogicalChildren.Add(_browser);
         }
 
         public async Task NavigateAsync(string url)
@@ -47,9 +46,15 @@ namespace Ailurus
         {
             _browser.ShowDeveloperTools();
         }
-
-        public string Title { get => _browser.Title; }
         
+        public string CurrentUrl
+        {
+            get => _browser.Address;
+            set => _browser.Address = value;
+        }
+        
+        public string Title => _browser.Title;
+
         private string NormalizeUrl(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
@@ -59,20 +64,32 @@ namespace Ailurus
 
             url = url.Trim();
 
-            if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return url switch
             {
-                // If the URL does not start with http:// or https://, add https:// by default.
-                url = "https://" + url;
-            }
-
-            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            {
-                // If the URL is not well-formed, assume it's a search query.
-                url = "https://www.google.com/search?q=" + Uri.EscapeDataString(url);
-            }
-
-            return url;
+                _ when url.StartsWith("about:", StringComparison.OrdinalIgnoreCase) => url,
+                _ when url.StartsWith("file://", StringComparison.OrdinalIgnoreCase) => url,
+                _ when Uri.IsWellFormedUriString(url, UriKind.Absolute) => url,
+                _ when IsLikelyHostOrIp(url) => $"https://{url}",
+                _ when url.Contains('.') && !url.Contains(" ") => $"https://{url}",
+                _ => $"https://www.google.com/search?q={Uri.EscapeDataString(url)}"
+            };
         }
+
+        private bool IsLikelyHostOrIp(string url)
+        {
+            if (IsIpAddress(url))
+            {
+                return true;
+            }
+            
+            if (Uri.CheckHostName(url) == UriHostNameType.Dns)
+            {
+                return url.Contains('.') && !url.StartsWith('.') && !url.EndsWith('.');
+            }
+
+            return false;
+        }
+        private bool IsIpAddress(string url) => System.Net.IPAddress.TryParse(url, out _);
+
     }
 }
