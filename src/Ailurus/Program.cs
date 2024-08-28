@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Linq;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using Xilium.CefGlue;
@@ -11,22 +11,17 @@ namespace Ailurus
 {
     class Program
     {
-        
         [STAThread]
         public static void Main(string[] args)
         {
             try
             {
-                Console.WriteLine("Starting application...");
+                bool isAnonymousMode = args.Contains("--anonymous");
 
-                InitializeCef(args);
+                InitializeCef(args, isAnonymousMode);
 
-                Console.WriteLine("CEF Initialized, starting Avalonia...");
-                
-                BuildAvaloniaApp()
+                BuildAvaloniaApp(isAnonymousMode)
                     .StartWithClassicDesktopLifetime(args);
-
-                Console.WriteLine("Avalonia started, entering main loop...");
             }
             catch (Exception ex)
             {
@@ -34,20 +29,21 @@ namespace Ailurus
             }
             finally
             {
-                Console.WriteLine("Shutting down CEF...");
                 CefRuntime.Shutdown();
-                Console.WriteLine("CEF Shutdown complete.");
             }
         }
 
-
-        public static AppBuilder BuildAvaloniaApp()
+        public static AppBuilder BuildAvaloniaApp(bool isAnonymousMode)
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
-                .UseReactiveUI();
+                .UseReactiveUI()
+                .AfterSetup(app =>
+                {
+                    ((App)app.Instance).Configure(isAnonymousMode);
+                });
 
-        private static void InitializeCef(string[] args)
+        private static void InitializeCef(string[] args, bool isAnonymousMode)
         {
             var cefBinaryPath = System.IO.Path.Combine(AppContext.BaseDirectory, "cef_binary");
 
@@ -55,7 +51,9 @@ namespace Ailurus
             {
                 LocalesDirPath = System.IO.Path.Combine(cefBinaryPath, "locales"),
                 ResourcesDirPath = cefBinaryPath,
-                CachePath = System.IO.Path.Combine(cefBinaryPath, "cache"),
+                CachePath = isAnonymousMode 
+                    ? System.IO.Path.Combine(cefBinaryPath, "anonymous_cache")
+                    : System.IO.Path.Combine(cefBinaryPath, "cache"),
                 RootCachePath = System.IO.Path.Combine(cefBinaryPath, "root_cache"),
                 Locale = "en-US",
                 MultiThreadedMessageLoop = true,
@@ -64,13 +62,11 @@ namespace Ailurus
             };
 
             CefRuntimeLoader.Initialize();
-            Console.WriteLine("Intialize Start...");
-            CefRuntime.Initialize(new CefMainArgs(args), cefSettings, new MyCefApp(), IntPtr.Zero);
-            Console.WriteLine("...Intialize End");
+            CefRuntime.Initialize(new CefMainArgs(args), cefSettings, new AilurusCefApp(), IntPtr.Zero);
         }
     }
 
-    internal class MyCefApp : CefApp
+    internal class AilurusCefApp : CefApp
     {
         protected override void OnBeforeCommandLineProcessing(string processType, CefCommandLine commandLine)
         {
@@ -88,6 +84,5 @@ namespace Ailurus
             commandLine.AppendSwitch("enable-native-gpu-memory-buffers");
             */
         }
-
     }
 }

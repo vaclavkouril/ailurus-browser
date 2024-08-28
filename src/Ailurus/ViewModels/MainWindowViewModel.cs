@@ -1,7 +1,10 @@
 using ReactiveUI;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Xilium.CefGlue.Avalonia;
 
 namespace Ailurus.ViewModels
@@ -65,6 +68,7 @@ namespace Ailurus.ViewModels
         public ReactiveCommand<Unit, Unit> OpenDevToolsCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> OpenHistoryCommand { get; }
         public ReactiveCommand<Unit, Unit> AddBookmarkCommand { get; }
+        public ReactiveCommand<Unit, Unit> LaunchAnonymousModeCommand { get; set; }
 
         public MainWindowViewModel(ISessionManager sessionManager, IHistoryManager historyManager, IBookmarkManager bookmarkManager)
         {

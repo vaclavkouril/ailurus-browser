@@ -25,8 +25,8 @@
 
         <!-- Custom Button Style -->
         <Style Selector="Button">
-            <Setter Property="Background" Value="#E07A5F" /> <!-- Soft Red/Orange Background -->
-            <Setter Property="Foreground" Value="#FFFFFF" /> <!-- White Text -->
+            <Setter Property="Background" Value="#E07A5F" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
             <Setter Property="Padding" Value="10,5" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="CornerRadius" Value="5" />
@@ -39,7 +39,6 @@
         <!-- Prevent Button Hover Effects -->
         <Style Selector="Button:pointerover">
             <!-- Same as default to prevent hover effect -->
-            <Setter Property="Background" Value="#E07A5F"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
         </Style>
 
@@ -64,7 +63,6 @@
         <!-- Prevent Tab Button Hover Effects -->
         <Style Selector="TabItem:pointerover">
             <!-- Same as default to prevent hover effect -->
-            <Setter Property="Background" Value="#F4F1DE"/>
             <Setter Property="Foreground" Value="#333333"/> 
         </Style>
     </Application.Styles>

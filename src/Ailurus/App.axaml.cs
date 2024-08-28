@@ -16,6 +16,11 @@ namespace Ailurus
             AvaloniaXamlLoader.Load(this);
         }
 
+        public void Configure(bool isAnonymousMode)
+        {
+            _isAnonymousMode = isAnonymousMode;
+        }
+
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -28,9 +33,16 @@ namespace Ailurus
                     ? new AnonymousHistoryManager()
                     : new HistoryManager();
 
-                var mainWindowViewModel = new MainWindowViewModel(sessionManager, historyManager);
+                IBookmarkManager bookmarkManager = _isAnonymousMode
+                    ? new AnonymousBookmarkManager()
+                    : new BookmarkManager();
 
-                desktop.MainWindow = new MainWindow(mainWindowViewModel);
+                var mainWindowViewModel = new MainWindowViewModel(sessionManager, historyManager, bookmarkManager);
+
+                desktop.MainWindow = new MainWindow(mainWindowViewModel)
+                {
+                    Title = _isAnonymousMode ? "Anonymous-Ailurus" : "Ailurus Web Browser"
+                };
 
                 desktop.Exit += async (_, __) =>
                 {
@@ -40,11 +52,6 @@ namespace Ailurus
             }
 
             base.OnFrameworkInitializationCompleted();
-        }
-
-        public void EnableAnonymousMode()
-        {
-            _isAnonymousMode = true;
         }
 
         private async Task ShutdownApplicationAsync()

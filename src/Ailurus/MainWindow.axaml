@@ -35,13 +35,16 @@
             <Setter Property="BorderBrush" Value="#D1D1D1" />
             <Setter Property="MinWidth" Value="150" />
         </Style>
-        <Style Selector="Button#goBtn, Button#settingsBtn, Button#refreshBtn, Button#backBtn, Button#forwardBtn">
+        <Style Selector="Button#goBtn, Button#settingsBtn, Button#refreshBtn,
+                Button#backBtn, Button#forwardBtn, Button#bookmarkBtn">
             <Setter Property="Background" Value="Black" />
             <Setter Property="Foreground" Value="WhiteSmoke" />
             <Setter Property="Padding" Value="5" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="Margin" Value="5,0,5,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
     </Window.Styles>
 
@@ -85,7 +88,7 @@
             <Button Grid.Column="4" x:Name="goBtn" Content="Go" Width="50" Command="{Binding GoCommand}" />
             <Button Grid.Column="5" x:Name="refreshBtn" Content="Refresh" Width="70" Command="{Binding ReloadCommand}" />
             <Button Grid.Column="6" x:Name="bookmarkBtn" Content="Bookmark" Width="70" Command="{Binding AddBookmarkCommand}" />
-            <Button Grid.Column="7" x:Name="settingsBtn" Content="Settings" Width="70">
+            <Button Grid.Column="7" x:Name="settingsBtn" Content="Options" Width="70">
                 <Button.Flyout>
                     <Flyout Placement="Bottom">
                         <StackPanel>
