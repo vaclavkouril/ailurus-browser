@@ -30,7 +30,7 @@
             <Setter Property="CornerRadius" Value="5" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Height" Value="28" />
+            <Setter Property="Height" Value="35" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="#D1D1D1" />
             <Setter Property="MinWidth" Value="150" />
@@ -54,6 +54,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -70,6 +71,7 @@
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             
             <Button Grid.Column="0" x:Name="backBtn" Content="Back" Command="{Binding BackCommand}" Width="60"/>
@@ -82,7 +84,8 @@
             </TextBox>
             <Button Grid.Column="4" x:Name="goBtn" Content="Go" Width="50" Command="{Binding GoCommand}" />
             <Button Grid.Column="5" x:Name="refreshBtn" Content="Refresh" Width="70" Command="{Binding ReloadCommand}" />
-            <Button Grid.Column="6" x:Name="settingsBtn" Content="Settings" Width="70">
+            <Button Grid.Column="6" x:Name="bookmarkBtn" Content="Bookmark" Width="70" Command="{Binding AddBookmarkCommand}" />
+            <Button Grid.Column="7" x:Name="settingsBtn" Content="Settings" Width="70">
                 <Button.Flyout>
                     <Flyout Placement="Bottom">
                         <StackPanel>
@@ -92,9 +95,38 @@
                 </Button.Flyout>
             </Button>
         </Grid>
+        
+        <!-- Bookmarks Row -->
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Background="#2E2E2E" VerticalAlignment="Top">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                <ItemsControl ItemsSource="{Binding Bookmarks}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:BookmarkItemViewModel">
+                            <Button Command="{Binding SelectBookmarkCommand}"
+                                    Width="140"
+                                    HorizontalAlignment="Stretch">
+                                <Grid ColumnDefinitions="*, Auto" HorizontalAlignment="Stretch">
+                                    <TextBlock Grid.Column="0" Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <Button Grid.Column="1" Content="x" Command="{Binding RemoveBookmarkCommand}"
+                                            Width="20" Height="20" Margin="5,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                            Background="#2B2B2B" Foreground="White"/>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+
 
         <!-- Tab Column with ScrollViewer -->
-        <Grid Grid.Row="1" Grid.Column="0" Background="#2E2E2E">
+        <Grid Grid.Row="2" Grid.Column="0" Background="#2E2E2E">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -127,10 +159,10 @@
         </Grid>
 
         <!-- GridSplitter for Resizing Tab Column -->
-        <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" HorizontalAlignment="Center" Background="Gray"/>
+        <GridSplitter Grid.Row="2" Grid.Column="1" Width="5" HorizontalAlignment="Center" Background="Gray"/>
 
         <!-- Browser Content -->
-        <Panel Grid.Row="1" Grid.Column="2" Background="White">
+        <Panel Grid.Row="2" Grid.Column="2" Background="White">
             <!-- Browser Content will be added here -->
             <ContentControl Content="{Binding BrowserContent}" /> 
         </Panel>

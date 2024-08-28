@@ -10,10 +10,12 @@ namespace Ailurus.ViewModels
     {
         private readonly ISessionManager _sessionManager;
         private readonly IHistoryManager _historyManager;
+        private readonly IBookmarkManager _bookmarkManager;
 
         private readonly string _defaultUrl = $"http://www.google.com";
 
         public ObservableCollection<BrowserTabViewModel> Tabs { get; } = new ObservableCollection<BrowserTabViewModel>();
+        public ObservableCollection<BookmarkItemViewModel> Bookmarks { get; } = new ObservableCollection<BookmarkItemViewModel>();
 
         private BrowserTabViewModel _selectedTab;
         public BrowserTabViewModel SelectedTab
@@ -62,17 +64,21 @@ namespace Ailurus.ViewModels
         public ReactiveCommand<Unit, Unit> ReloadCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> OpenDevToolsCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> OpenHistoryCommand { get; }
+        public ReactiveCommand<Unit, Unit> AddBookmarkCommand { get; }
 
-        public MainWindowViewModel(ISessionManager sessionManager, IHistoryManager historyManager)
+        public MainWindowViewModel(ISessionManager sessionManager, IHistoryManager historyManager, IBookmarkManager bookmarkManager)
         {
             _sessionManager = sessionManager;
             _historyManager = historyManager;
+            _bookmarkManager = bookmarkManager;
 
             AddNewTabCommand = ReactiveCommand.Create(AddNewTab);
             OpenHistoryCommand = ReactiveCommand.Create(OpenHistoryWindow);
+            AddBookmarkCommand = ReactiveCommand.Create(AddBookmark);
 
             InitializeCommands();
             LoadSessionAsync().ConfigureAwait(false);
+            LoadBookmarksAsync().ConfigureAwait(false);
         }
 
         private void InitializeCommands()
@@ -123,15 +129,33 @@ namespace Ailurus.ViewModels
             {
                 UpdateEditableUrl();
                 _historyManager.AddToHistoryAsync(SelectedTab.Url);
-
             }
         }
-        
+
         private void OnSelectedTabTitleChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(BrowserTabViewModel.Header))
             {
                 this.RaisePropertyChanged(nameof(Tabs));
+            }
+        }
+
+        public async Task LoadBookmarksAsync()
+        {
+            var bookmarks = await _bookmarkManager.GetBookmarksAsync();
+            Bookmarks.Clear();
+            foreach (var (url, title) in bookmarks)
+            {
+                Bookmarks.Add(new BookmarkItemViewModel(url, title, _bookmarkManager, this));
+            }
+        }
+
+        private async void AddBookmark()
+        {
+            if (!string.IsNullOrEmpty(SelectedTab?.Url) && !string.IsNullOrEmpty(SelectedTab?.Header))
+            {
+                await _bookmarkManager.AddBookmarkAsync(SelectedTab.Url, SelectedTab.Header);
+                Bookmarks.Add(new BookmarkItemViewModel(SelectedTab.Url, SelectedTab.Header, _bookmarkManager, this));
             }
         }
 

@@ -8,5 +8,7 @@ namespace Ailurus
         Task AddBookmarkAsync(string url, string title);
         Task<IEnumerable<(string Url, string Title)>> GetBookmarksAsync();
         Task RemoveBookmarkAsync(string url);
+        Task<BookmarkItem?> GetSelectedBookmarkAsync();
+        Task SelectBookmarkAsync(string url);
     }
 }
