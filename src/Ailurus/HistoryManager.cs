@@ -4,60 +4,59 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Ailurus
+namespace Ailurus;
+
+public class HistoryManager : IHistoryManager
 {
-    public class HistoryManager : IHistoryManager
+    private const string HistoryFilePath = "history.json";
+    private readonly List<HistoryItem> _historyItems = [];
+
+    public async Task AddToHistoryAsync(string url)
     {
-        private readonly string _historyFilePath = "history.json";
-        private readonly List<HistoryItem> _historyItems = new List<HistoryItem>();
+        var historyItem = new HistoryItem(DateTime.Now, url);
+        _historyItems.Add(historyItem);
+        await SaveHistoryToFileAsync();
+    }
 
-        public async Task AddToHistoryAsync(string url)
+    public async Task<IEnumerable<HistoryItem>> GetHistoryAsync()
+    {
+        await LoadHistoryFromFileAsync();
+        // For the items to be ordered from the most recent
+        _historyItems.Reverse();
+        return _historyItems;
+    }
+
+    private async Task ClearHistoryAsync()
+    {
+        _historyItems.Clear();
+        if (File.Exists(HistoryFilePath))
         {
-            var historyItem = new HistoryItem(DateTime.Now, url);
-            _historyItems.Add(historyItem);
-            await SaveHistoryToFileAsync();
+            File.Delete(HistoryFilePath);
         }
+    }
 
-        public async Task<IEnumerable<HistoryItem>> GetHistoryAsync()
-        {
-            await LoadHistoryFromFileAsync();
-            // For the items to go from the most recent
-            _historyItems.Reverse();
-            return _historyItems;
-        }
+    public async Task DeleteHistoryAsync()
+    {
+        await ClearHistoryAsync();
+    }
 
-        public async Task ClearHistoryAsync()
+    private async Task LoadHistoryFromFileAsync()
+    {
+        if (File.Exists(HistoryFilePath))
         {
-            _historyItems.Clear();
-            if (File.Exists(_historyFilePath))
+            var json = await File.ReadAllTextAsync(HistoryFilePath);
+            var historyFromFile = JsonSerializer.Deserialize<List<HistoryItem>>(json);
+            if (historyFromFile != null)
             {
-                File.Delete(_historyFilePath);
+                _historyItems.Clear();
+                _historyItems.AddRange(historyFromFile);
             }
         }
+    }
 
-        public async Task DeleteHistoryAsync()
-        {
-            await ClearHistoryAsync();
-        }
-
-        private async Task LoadHistoryFromFileAsync()
-        {
-            if (File.Exists(_historyFilePath))
-            {
-                var json = await File.ReadAllTextAsync(_historyFilePath);
-                var historyFromFile = JsonSerializer.Deserialize<List<HistoryItem>>(json);
-                if (historyFromFile != null)
-                {
-                    _historyItems.Clear();
-                    _historyItems.AddRange(historyFromFile);
-                }
-            }
-        }
-
-        private async Task SaveHistoryToFileAsync()
-        {
-            var json = JsonSerializer.Serialize(_historyItems);
-            await File.WriteAllTextAsync(_historyFilePath, json);
-        }
+    private async Task SaveHistoryToFileAsync()
+    {
+        var json = JsonSerializer.Serialize(_historyItems);
+        await File.WriteAllTextAsync(HistoryFilePath, json);
     }
 }

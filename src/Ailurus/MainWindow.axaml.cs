@@ -1,20 +1,18 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.ReactiveUI;
+
 using Ailurus.ViewModels;
 
-namespace Ailurus
+namespace Ailurus;
+
+public partial class MainWindow : Window
 {
-    public partial class MainWindow : Window
-    {
         
-        public MainWindow(MainWindowViewModel viewModel)
-        {
-            InitializeComponent();
-            DataContext = viewModel;
+    public MainWindow(MainWindowViewModel viewModel)
+    {
+        InitializeComponent();
+        DataContext = viewModel;
             
-            viewModel.AddNewTabCommand.Execute().Subscribe();
-        }
+        viewModel.AddNewTabCommand.Execute().Subscribe();
     }
 }

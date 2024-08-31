@@ -1,23 +1,22 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ailurus
+namespace Ailurus;
+
+public class AnonymousHistoryManager : IHistoryManager
 {
-    public class AnonymousHistoryManager : IHistoryManager
+    public Task AddToHistoryAsync(string url)
     {
-        public Task AddToHistoryAsync(string url)
-        {
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
+    }
 
-        public Task<IEnumerable<HistoryItem>> GetHistoryAsync()
-        {
-            return Task.FromResult<IEnumerable<HistoryItem>>(new List<HistoryItem>());
-        }
+    public Task<IEnumerable<HistoryItem>> GetHistoryAsync()
+    {
+        return Task.FromResult<IEnumerable<HistoryItem>>(new List<HistoryItem>());
+    }
 
-        public Task DeleteHistoryAsync()
-        {
-            return Task.CompletedTask;
-        }
+    public Task DeleteHistoryAsync()
+    {
+        return Task.CompletedTask;
     }
 }

@@ -5,60 +5,59 @@ using Ailurus.ViewModels;
 using System.Threading.Tasks;
 using Xilium.CefGlue;
 
-namespace Ailurus
+namespace Ailurus;
+
+public class App : Application
 {
-    public class App : Application
+    private bool _isAnonymousMode;
+
+    public override void Initialize()
     {
-        private bool _isAnonymousMode;
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        public override void Initialize()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    public void Configure(bool isAnonymousMode)
+    {
+        _isAnonymousMode = isAnonymousMode;
+    }
 
-        public void Configure(bool isAnonymousMode)
+    public override void OnFrameworkInitializationCompleted()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            _isAnonymousMode = isAnonymousMode;
-        }
+            ISessionManager sessionManager = _isAnonymousMode
+                ? new AnonymousSessionManager()
+                : new SessionManager();
 
-        public override void OnFrameworkInitializationCompleted()
-        {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            IHistoryManager historyManager = _isAnonymousMode
+                ? new AnonymousHistoryManager()
+                : new HistoryManager();
+
+            IBookmarkManager bookmarkManager = _isAnonymousMode
+                ? new AnonymousBookmarkManager()
+                : new BookmarkManager();
+
+            var mainWindowViewModel = new MainWindowViewModel(sessionManager, historyManager, bookmarkManager);
+
+            desktop.MainWindow = new MainWindow(mainWindowViewModel)
             {
-                ISessionManager sessionManager = _isAnonymousMode
-                    ? new AnonymousSessionManager()
-                    : new SessionManager();
+                Title = _isAnonymousMode ? "Anonymous-Ailurus" : "Ailurus Web Browser"
+            };
 
-                IHistoryManager historyManager = _isAnonymousMode
-                    ? new AnonymousHistoryManager()
-                    : new HistoryManager();
-
-                IBookmarkManager bookmarkManager = _isAnonymousMode
-                    ? new AnonymousBookmarkManager()
-                    : new BookmarkManager();
-
-                var mainWindowViewModel = new MainWindowViewModel(sessionManager, historyManager, bookmarkManager);
-
-                desktop.MainWindow = new MainWindow(mainWindowViewModel)
-                {
-                    Title = _isAnonymousMode ? "Anonymous-Ailurus" : "Ailurus Web Browser"
-                };
-
-                desktop.Exit += async (_, __) =>
-                {
-                    await mainWindowViewModel.SaveSessionAsync();
-                    await ShutdownApplicationAsync();
-                };
-            }
-
-            base.OnFrameworkInitializationCompleted();
+            desktop.Exit += async (_, _) =>
+            {
+                await mainWindowViewModel.SaveSessionAsync();
+                await ShutdownApplicationAsync();
+            };
         }
 
-        private async Task ShutdownApplicationAsync()
-        {
-            // Properly shutdown CefGlue
-            CefRuntime.Shutdown();
-            await Task.CompletedTask;
-        }
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private static async Task ShutdownApplicationAsync()
+    {
+        // Properly shutdown CefGlue
+        CefRuntime.Shutdown();
+        await Task.CompletedTask;
     }
 }

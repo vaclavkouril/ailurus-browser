@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ailurus
+namespace Ailurus;
+
+public interface IBookmarkManager
 {
-    public interface IBookmarkManager
-    {
-        Task AddBookmarkAsync(string url, string title);
-        Task<IEnumerable<(string Url, string Title)>> GetBookmarksAsync();
-        Task RemoveBookmarkAsync(string url);
-        Task<BookmarkItem?> GetSelectedBookmarkAsync();
-        Task SelectBookmarkAsync(string url);
-    }
+    Task AddBookmarkAsync(string url, string title);
+    Task<IEnumerable<(string Url, string Title)>> GetBookmarksAsync();
+    Task RemoveBookmarkAsync(string url);
+    Task<BookmarkItem?> GetSelectedBookmarkAsync();
+    Task SelectBookmarkAsync(string url);
 }

@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ailurus
+namespace Ailurus;
+
+public interface IHistoryManager
 {
-    public interface IHistoryManager
-    {
-        Task AddToHistoryAsync(string url);
-        Task<IEnumerable<HistoryItem>> GetHistoryAsync();
-        Task DeleteHistoryAsync();
-    }
+    Task AddToHistoryAsync(string url);
+    Task<IEnumerable<HistoryItem>> GetHistoryAsync();
+    Task DeleteHistoryAsync();
 }

@@ -3,38 +3,37 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Threading.Tasks;
 
-namespace Ailurus.ViewModels
+namespace Ailurus.ViewModels;
+
+public class HistoryWindowViewModel : ReactiveObject
 {
-    public class HistoryWindowViewModel : ReactiveObject
+    private readonly IHistoryManager _historyManager;
+
+    public ObservableCollection<HistoryItemViewModel> HistoryItems { get; } = [];
+
+    public ReactiveCommand<Unit, Unit> ClearHistoryCommand { get; }
+
+    public HistoryWindowViewModel(IHistoryManager historyManager)
     {
-        private readonly IHistoryManager _historyManager;
+        _historyManager = historyManager;
 
-        public ObservableCollection<HistoryItemViewModel> HistoryItems { get; } = new ObservableCollection<HistoryItemViewModel>();
+        ClearHistoryCommand = ReactiveCommand.CreateFromTask(ClearHistoryAsync);
 
-        public ReactiveCommand<Unit, Unit> ClearHistoryCommand { get; }
+        LoadHistoryAsync().ConfigureAwait(false);
+    }
 
-        public HistoryWindowViewModel(IHistoryManager historyManager)
+    private async Task LoadHistoryAsync()
+    {
+        var history = await _historyManager.GetHistoryAsync();
+        foreach (var item in history)
         {
-            _historyManager = historyManager;
-
-            ClearHistoryCommand = ReactiveCommand.CreateFromTask(ClearHistoryAsync);
-
-            LoadHistoryAsync().ConfigureAwait(false);
+            HistoryItems.Add(new HistoryItemViewModel(item.Timestamp, item.Url));
         }
+    }
 
-        private async Task LoadHistoryAsync()
-        {
-            var history = await _historyManager.GetHistoryAsync();
-            foreach (var item in history)
-            {
-                HistoryItems.Add(new HistoryItemViewModel(item.Timestamp, item.Url));
-            }
-        }
-
-        private async Task ClearHistoryAsync()
-        {
-            await _historyManager.DeleteHistoryAsync();
-            HistoryItems.Clear();
-        }
+    private async Task ClearHistoryAsync()
+    {
+        await _historyManager.DeleteHistoryAsync();
+        HistoryItems.Clear();
     }
 }

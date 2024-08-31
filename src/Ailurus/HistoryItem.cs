@@ -1,21 +1,14 @@
 using System;
 
-namespace Ailurus
+namespace Ailurus;
+
+public class HistoryItem(DateTime timestamp, string url)
 {
-    public class HistoryItem
+    public DateTime Timestamp { get; } = timestamp;
+    public string Url { get; } = url;
+
+    public override string ToString()
     {
-        public DateTime Timestamp { get; set; }
-        public string Url { get; set; } = string.Empty;
-
-        public HistoryItem(DateTime timestamp, string url)
-        {
-            Timestamp = timestamp;
-            Url = url;
-        }
-
-        public override string ToString()
-        {
-            return $"{Timestamp:G} - {Url}";
-        }
+        return $"{Timestamp:G} - {Url}";
     }
 }
