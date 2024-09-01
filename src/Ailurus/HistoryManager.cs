@@ -6,11 +6,19 @@ using System.Threading.Tasks;
 
 namespace Ailurus;
 
+/// <summary>
+/// Manages the browsing history, including adding, retrieving, and deleting history items.
+/// </summary>
 public class HistoryManager : IHistoryManager
 {
     private const string HistoryFilePath = "history.json";
-    private readonly List<HistoryItem> _historyItems = [];
+    private readonly List<HistoryItem> _historyItems = new();
 
+    /// <summary>
+    /// Adds a new URL to the browsing history.
+    /// </summary>
+    /// <param name="url">The URL to add to the history.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task AddToHistoryAsync(string url)
     {
         var historyItem = new HistoryItem(DateTime.Now, url);
@@ -18,14 +26,30 @@ public class HistoryManager : IHistoryManager
         await SaveHistoryToFileAsync();
     }
 
+    /// <summary>
+    /// Retrieves the browsing history items in reverse chronological order.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> containing an enumeration of history items.</returns>
     public async Task<IEnumerable<HistoryItem>> GetHistoryAsync()
     {
         await LoadHistoryFromFileAsync();
-        // For the items to be ordered from the most recent
-        _historyItems.Reverse();
+        _historyItems.Reverse(); // Order items from most recent to oldest
         return _historyItems;
     }
 
+    /// <summary>
+    /// Deletes all items from the browsing history.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task DeleteHistoryAsync()
+    {
+        await ClearHistoryAsync();
+    }
+
+    /// <summary>
+    /// Clears the history list and deletes the history file if it exists.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task ClearHistoryAsync()
     {
         _historyItems.Clear();
@@ -33,13 +57,13 @@ public class HistoryManager : IHistoryManager
         {
             File.Delete(HistoryFilePath);
         }
+        await Task.CompletedTask;
     }
 
-    public async Task DeleteHistoryAsync()
-    {
-        await ClearHistoryAsync();
-    }
-
+    /// <summary>
+    /// Loads the browsing history from the history file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task LoadHistoryFromFileAsync()
     {
         if (File.Exists(HistoryFilePath))
@@ -54,6 +78,10 @@ public class HistoryManager : IHistoryManager
         }
     }
 
+    /// <summary>
+    /// Saves the current browsing history to the history file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task SaveHistoryToFileAsync()
     {
         var json = JsonSerializer.Serialize(_historyItems);

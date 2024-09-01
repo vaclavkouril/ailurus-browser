@@ -8,6 +8,10 @@ using Xilium.CefGlue.Avalonia;
 
 namespace Ailurus.ViewModels
 {
+    /// <summary>
+    /// ViewModel for the main window of the Ailurus web browser.
+    /// Manages tabs, bookmarks, and key bindings.
+    /// </summary>
     public class MainWindowViewModel : ReactiveObject
     {
         private readonly ISessionManager _sessionManager;
@@ -15,11 +19,26 @@ namespace Ailurus.ViewModels
         private readonly IBookmarkManager _bookmarkManager;
         private readonly IConfigurationManager _configManager;
 
+        /// <summary>
+        /// Gets the collection of browser tabs.
+        /// </summary>
         public ObservableCollection<BrowserTabViewModel> Tabs { get; } = new ObservableCollection<BrowserTabViewModel>();
+
+        /// <summary>
+        /// Gets the collection of bookmarks.
+        /// </summary>
         public ObservableCollection<BookmarkItemViewModel> Bookmarks { get; } = new ObservableCollection<BookmarkItemViewModel>();
+
+        /// <summary>
+        /// Gets the collection of dynamically loaded key bindings.
+        /// </summary>
         public ObservableCollection<KeyBinding> DynamicKeyBindings { get; } = new ObservableCollection<KeyBinding>();
 
         private BrowserTabViewModel? _selectedTab;
+
+        /// <summary>
+        /// Gets or sets the currently selected tab.
+        /// </summary>
         public BrowserTabViewModel? SelectedTab
         {
             get => _selectedTab;
@@ -49,15 +68,23 @@ namespace Ailurus.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets the browser content of the selected tab.
+        /// </summary>
         public AvaloniaCefBrowser? BrowserContent => SelectedTab?.Browser;
 
         private string _editableUrl = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the editable URL in the address bar.
+        /// </summary>
         public string EditableUrl
         {
             get => _editableUrl;
             set => this.RaiseAndSetIfChanged(ref _editableUrl, value);
         }
 
+        // Reactive commands for various browser actions
         public ReactiveCommand<Unit, Unit> AddNewTabCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> GoCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> BackCommand { get; private set; }
@@ -69,8 +96,8 @@ namespace Ailurus.ViewModels
         public ReactiveCommand<Unit, Unit> RefreshSettingsCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> NavigateUpCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> NavigateDownCommand { get; private set; }
-
-        // Key Gestures (These can be populated dynamically from the configuration manager)
+        
+        // Key gestures for various actions, set dynamically
         public KeyGesture BackGesture { get; private set; }
         public KeyGesture ForwardGesture { get; private set; }
         public KeyGesture ReloadGesture { get; private set; }
@@ -80,6 +107,13 @@ namespace Ailurus.ViewModels
         public KeyGesture NavigateUpGesture { get; private set; }
         public KeyGesture NavigateDownGesture { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="historyManager">The history manager.</param>
+        /// <param name="bookmarkManager">The bookmark manager.</param>
+        /// <param name="configManager">The configuration manager.</param>
         public MainWindowViewModel(
             ISessionManager sessionManager,
             IHistoryManager historyManager,
@@ -97,6 +131,9 @@ namespace Ailurus.ViewModels
             InitializeKeyBindings().ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Initializes the commands for the main window.
+        /// </summary>
         private void InitializeCommands()
         {
             GoCommand = ReactiveCommand.CreateFromTask(GoToUrlAsync);
@@ -112,6 +149,9 @@ namespace Ailurus.ViewModels
             NavigateDownCommand = ReactiveCommand.Create(NavigateDown);
         }
 
+        /// <summary>
+        /// Raises property changed events for the commands.
+        /// </summary>
         private void UpdateCommands()
         {
             this.RaisePropertyChanged(nameof(GoCommand));
@@ -120,6 +160,9 @@ namespace Ailurus.ViewModels
             this.RaisePropertyChanged(nameof(ReloadCommand));
         }
 
+        /// <summary>
+        /// Refreshes the settings by reloading them from the configuration manager.
+        /// </summary>
         private async Task RefreshSettingsAsync()
         {
             await _configManager.RefreshSettingsAsync();
@@ -136,6 +179,9 @@ namespace Ailurus.ViewModels
             }
         }
 
+        /// <summary>
+        /// Initializes key bindings from the configuration and sets up commands.
+        /// </summary>
         private async Task InitializeKeyBindings()
         {
             var keyBindings = await _configManager.GetKeyBindingsAsync();
@@ -155,8 +201,7 @@ namespace Ailurus.ViewModels
                     "Reload" => ReloadCommand,
                     _ => null
                 });
-
-                // Setting the gestures dynamically based on configuration
+                
                 switch (kvp.Key)
                 {
                     case "NavigateUp":
@@ -196,6 +241,11 @@ namespace Ailurus.ViewModels
             this.RaisePropertyChanged(nameof(ReloadGesture));
         }
 
+        /// <summary>
+        /// Adds a key binding to the dynamic key bindings collection.
+        /// </summary>
+        /// <param name="gesture">The key gesture.</param>
+        /// <param name="command">The command to execute.</param>
         private void AddKeyBinding(KeyGesture gesture, ICommand? command)
         {
             if (command == null) return;
@@ -209,6 +259,9 @@ namespace Ailurus.ViewModels
             DynamicKeyBindings.Add(keyBinding);
         }
 
+        /// <summary>
+        /// Adds a new browser tab.
+        /// </summary>
         private void AddNewTab()
         {
             var newTab = new BrowserTabViewModel(this);
@@ -217,17 +270,26 @@ namespace Ailurus.ViewModels
             SelectedTab = newTab;
         }
 
+        /// <summary>
+        /// Navigates to the URL entered in the address bar.
+        /// </summary>
         private async Task GoToUrlAsync()
         {
             if (string.IsNullOrWhiteSpace(EditableUrl)) return;
             await SelectedTab?.NavigateAsync(EditableUrl);
         }
 
+        /// <summary>
+        /// Updates the editable URL with the selected tab's URL.
+        /// </summary>
         private void UpdateEditableUrl()
         {
             EditableUrl = SelectedTab?.Url ?? string.Empty;
         }
 
+        /// <summary>
+        /// Handles URL change events for the selected tab.
+        /// </summary>
         private void OnSelectedTabUrlChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(BrowserTabViewModel.Url)) return;
@@ -235,6 +297,9 @@ namespace Ailurus.ViewModels
             _ = _historyManager.AddToHistoryAsync(SelectedTab?.Url ?? string.Empty);
         }
 
+        /// <summary>
+        /// Handles title change events for the selected tab.
+        /// </summary>
         private void OnSelectedTabTitleChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(BrowserTabViewModel.Header))
@@ -243,6 +308,9 @@ namespace Ailurus.ViewModels
             }
         }
 
+        /// <summary>
+        /// Navigates to the previous tab in the list.
+        /// </summary>
         private void NavigateUp()
         {
             if (Tabs.Count == 0) return;
@@ -251,6 +319,9 @@ namespace Ailurus.ViewModels
             SelectedTab = Tabs[previousIndex];
         }
 
+        /// <summary>
+        /// Navigates to the next tab in the list.
+        /// </summary>
         private void NavigateDown()
         {
             if (Tabs.Count == 0) return;
@@ -259,6 +330,9 @@ namespace Ailurus.ViewModels
             SelectedTab = Tabs[nextIndex];
         }
 
+        /// <summary>
+        /// Loads the bookmarks from the bookmark manager.
+        /// </summary>
         public async Task LoadBookmarksAsync()
         {
             var bookmarks = await _bookmarkManager.GetBookmarksAsync();
@@ -269,6 +343,9 @@ namespace Ailurus.ViewModels
             }
         }
 
+        /// <summary>
+        /// Adds the current URL as a bookmark.
+        /// </summary>
         private async void AddBookmark()
         {
             if (string.IsNullOrEmpty(SelectedTab?.Url) || string.IsNullOrEmpty(SelectedTab?.Header)) return;
@@ -277,6 +354,10 @@ namespace Ailurus.ViewModels
             Bookmarks.Add(new BookmarkItemViewModel(SelectedTab.Url, SelectedTab.Header, _bookmarkManager, this));
         }
 
+        /// <summary>
+        /// Closes the specified tab.
+        /// </summary>
+        /// <param name="tab">The tab to close.</param>
         public void CloseTab(BrowserTabViewModel tab)
         {
             if (SelectedTab == tab)
@@ -289,11 +370,17 @@ namespace Ailurus.ViewModels
             Tabs.Remove(tab);
         }
 
+        /// <summary>
+        /// Saves the current session.
+        /// </summary>
         public async Task SaveSessionAsync()
         {
             await _sessionManager.SaveSessionAsync(Tabs);
         }
 
+        /// <summary>
+        /// Loads the session from the session manager.
+        /// </summary>
         private async Task LoadSessionAsync()
         {
             var tabs = await _sessionManager.LoadSessionAsync(this);
@@ -310,6 +397,9 @@ namespace Ailurus.ViewModels
             }
         }
 
+        /// <summary>
+        /// Opens the history window.
+        /// </summary>
         private void OpenHistoryWindow()
         {
             var historyWindow = new HistoryWindow(_historyManager);

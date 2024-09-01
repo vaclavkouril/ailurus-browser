@@ -3,37 +3,57 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Threading.Tasks;
 
-namespace Ailurus.ViewModels;
-
-public class HistoryWindowViewModel : ReactiveObject
+namespace Ailurus.ViewModels
 {
-    private readonly IHistoryManager _historyManager;
-
-    public ObservableCollection<HistoryItemViewModel> HistoryItems { get; } = [];
-
-    public ReactiveCommand<Unit, Unit> ClearHistoryCommand { get; }
-
-    public HistoryWindowViewModel(IHistoryManager historyManager)
+    /// <summary>
+    /// ViewModel for managing the history window.
+    /// </summary>
+    public class HistoryWindowViewModel : ReactiveObject
     {
-        _historyManager = historyManager;
+        private readonly IHistoryManager _historyManager;
 
-        ClearHistoryCommand = ReactiveCommand.CreateFromTask(ClearHistoryAsync);
+        /// <summary>
+        /// Gets the collection of history items.
+        /// </summary>
+        public ObservableCollection<HistoryItemViewModel> HistoryItems { get; } = new ObservableCollection<HistoryItemViewModel>();
 
-        LoadHistoryAsync().ConfigureAwait(false);
-    }
+        /// <summary>
+        /// Command to clear the history.
+        /// </summary>
+        public ReactiveCommand<Unit, Unit> ClearHistoryCommand { get; }
 
-    private async Task LoadHistoryAsync()
-    {
-        var history = await _historyManager.GetHistoryAsync();
-        foreach (var item in history)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HistoryWindowViewModel"/> class.
+        /// </summary>
+        /// <param name="historyManager">The history manager.</param>
+        public HistoryWindowViewModel(IHistoryManager historyManager)
         {
-            HistoryItems.Add(new HistoryItemViewModel(item.Timestamp, item.Url));
-        }
-    }
+            _historyManager = historyManager;
 
-    private async Task ClearHistoryAsync()
-    {
-        await _historyManager.DeleteHistoryAsync();
-        HistoryItems.Clear();
+            ClearHistoryCommand = ReactiveCommand.CreateFromTask(ClearHistoryAsync);
+
+            LoadHistoryAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Loads the browsing history asynchronously and populates the HistoryItems collection.
+        /// </summary>
+        private async Task LoadHistoryAsync()
+        {
+            var history = await _historyManager.GetHistoryAsync();
+            foreach (var item in history)
+            {
+                HistoryItems.Add(new HistoryItemViewModel(item.Timestamp, item.Url));
+            }
+        }
+
+        /// <summary>
+        /// Clears the browsing history asynchronously.
+        /// </summary>
+        private async Task ClearHistoryAsync()
+        {
+            await _historyManager.DeleteHistoryAsync();
+            HistoryItems.Clear();
+        }
     }
 }

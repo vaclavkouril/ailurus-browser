@@ -9,11 +9,19 @@ using Xilium.CefGlue;
 
 namespace Ailurus;
 
+/// <summary>
+/// Manages the session for the browser, including saving and loading tabs and cookies.
+/// </summary>
 public class SessionManager : ISessionManager
 {
     private const string SessionFilePath = "session.json";
     private const string CookiesFilePath = "cookies.json";
 
+    /// <summary>
+    /// Saves the current session by persisting open tabs and cookies.
+    /// </summary>
+    /// <param name="tabs">The collection of open tabs.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous save operation.</returns>
     public async Task SaveSessionAsync(IEnumerable<BrowserTabViewModel> tabs)
     {
         var sessionData = tabs.Select(tab => new TabSessionData
@@ -28,6 +36,11 @@ public class SessionManager : ISessionManager
         await SaveCookiesAsync();
     }
 
+    /// <summary>
+    /// Loads a previously saved session, restoring open tabs and cookies.
+    /// </summary>
+    /// <param name="mainViewModel">The view model for the main window.</param>
+    /// <returns>A <see cref="Task"/> containing the restored tabs.</returns>
     public async Task<IEnumerable<BrowserTabViewModel>> LoadSessionAsync(MainWindowViewModel mainViewModel)
     {
         if (!File.Exists(SessionFilePath))
@@ -49,6 +62,10 @@ public class SessionManager : ISessionManager
         }).ToList();
     }
 
+    /// <summary>
+    /// Saves browser cookies to a file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous save operation.</returns>
     private async Task SaveCookiesAsync()
     {
         var cookiesManager = CefCookieManager.GetGlobal(null);
@@ -65,6 +82,10 @@ public class SessionManager : ISessionManager
         await File.WriteAllTextAsync(CookiesFilePath, json);
     }
 
+    /// <summary>
+    /// Loads browser cookies from a file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous load operation.</returns>
     private async Task LoadCookiesAsync()
     {
         if (!File.Exists(CookiesFilePath))
@@ -93,12 +114,18 @@ public class SessionManager : ISessionManager
         }
     }
 
+    /// <summary>
+    /// Represents the data required to save a tab session.
+    /// </summary>
     private class TabSessionData
     {
         public string Url { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Represents the data required to save a browser cookie.
+    /// </summary>
     private class CookieData
     {
         public string Name { get; init; } = string.Empty;
@@ -111,10 +138,21 @@ public class SessionManager : ISessionManager
         public bool HttpOnly { get; init; }
     }
 
+    /// <summary>
+    /// Visitor class for handling cookies during the saving process.
+    /// </summary>
     private class CookieVisitor(List<CookieData> cookiesList) : CefCookieVisitor
     {
         private readonly TaskCompletionSource<bool> _completionSource = new();
 
+        /// <summary>
+        /// Visits each cookie and adds it to the list of cookies to be saved.
+        /// </summary>
+        /// <param name="cookie">The current cookie being visited.</param>
+        /// <param name="count">The current cookie's index.</param>
+        /// <param name="total">The total number of cookies.</param>
+        /// <param name="deleteCookie">Indicates whether the cookie should be deleted.</param>
+        /// <returns>True to continue visiting cookies; otherwise, false.</returns>
         protected override bool Visit(CefCookie cookie, int count, int total, out bool deleteCookie)
         {
             deleteCookie = false;
@@ -139,12 +177,20 @@ public class SessionManager : ISessionManager
             return true;
         }
 
+        /// <summary>
+        /// Waits for the cookie visitation to complete.
+        /// </summary>
         public void WaitForCompletion()
         {
             _completionSource.Task.Wait();
         }
     }
         
+    /// <summary>
+    /// Converts a <see cref="DateTime"/> to a CEF-specific time format.
+    /// </summary>
+    /// <param name="dateTime">The <see cref="DateTime"/> to convert.</param>
+    /// <returns>The converted <see cref="CefBaseTime"/>.</returns>
     private static CefBaseTime DateTimeToCefBaseTime(DateTime dateTime)
     {
         var cefTime = new CefTime(dateTime.ToUniversalTime());
@@ -155,6 +201,11 @@ public class SessionManager : ISessionManager
         throw new InvalidOperationException("Failed to convert DateTime to CefBaseTime.");
     }
         
+    /// <summary>
+    /// Converts a CEF-specific time format to a <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="cefBaseTime">The CEF-specific time format to convert.</param>
+    /// <returns>The converted <see cref="DateTime"/>.</returns>
     private static DateTime CefBaseTimeToDateTime(CefBaseTime cefBaseTime)
     {
         if (cefBaseTime.UtcExplode(out CefTime cefTime))
