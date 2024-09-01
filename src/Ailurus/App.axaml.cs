@@ -37,7 +37,12 @@ public class App : Application
                 ? new AnonymousBookmarkManager()
                 : new BookmarkManager();
 
-            var mainWindowViewModel = new MainWindowViewModel(sessionManager, historyManager, bookmarkManager);
+            IConfigurationManager configurationManager = new ConfigurationManager();
+
+            var mainWindowViewModel = new MainWindowViewModel(sessionManager,
+                historyManager,
+                bookmarkManager,
+                configurationManager);
 
             desktop.MainWindow = new MainWindow(mainWindowViewModel)
             {

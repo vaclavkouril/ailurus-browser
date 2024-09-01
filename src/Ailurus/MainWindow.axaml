@@ -11,7 +11,7 @@
     <Window.Resources>
         <converters:SelectedTabConverter x:Key="SelectedTabConverter"/>
     </Window.Resources>
-
+    
     <Window.Styles>
         <Style Selector="Button#MyBtn">
             <Setter Property="Foreground" Value="White" />
@@ -54,22 +54,22 @@
         <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="Gray" Height="50" VerticalAlignment="Center"
               ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto" RowDefinitions="60">
 
-            <Button Grid.Column="0" x:Name="BackBtn" Content="Back" Command="{Binding BackCommand}" Width="60"/>
-            <Button Grid.Column="1" x:Name="ForwardBtn" Content="Forward" Command="{Binding ForwardCommand}" Width="70"/>
+            <Button Grid.Column="0" x:Name="BackBtn" Content="Back" Command="{Binding BackCommand}" Width="60" HotKey="{Binding BackGesture}" />
+            <Button Grid.Column="1" x:Name="ForwardBtn" Content="Forward" Command="{Binding ForwardCommand}" Width="70" HotKey="{Binding ForwardGesture}"/>
             <Label Grid.Column="2" Content="AILURUS BROWSER" Background="Orange" VerticalAlignment="Center" Padding="10" Margin="5,0"/>
             <TextBox Grid.Column="3" x:Name="UrlBox" AcceptsReturn="False" Watermark="Enter URL" Text="{Binding EditableUrl}" Margin="5,0">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding GoCommand}" />
                 </TextBox.KeyBindings>
             </TextBox>
-            <Button Grid.Column="4" x:Name="GoBtn" Content="Go" Width="50" Command="{Binding GoCommand}" />
-            <Button Grid.Column="5" x:Name="RefreshBtn" Content="Refresh" Width="70" Command="{Binding ReloadCommand}" />
-            <Button Grid.Column="6" x:Name="BookmarkBtn" Content="Bookmark" Width="70" Command="{Binding AddBookmarkCommand}" />
+            <Button Grid.Column="4" x:Name="GoBtn" Content="Go" Width="50" Command="{Binding GoCommand}" HotKey="{Binding GoGesture}" />
+            <Button Grid.Column="5" x:Name="RefreshBtn" Content="Refresh" Width="70" Command="{Binding ReloadCommand}" HotKey="{Binding ReloadGesture}" />
+            <Button Grid.Column="6" x:Name="BookmarkBtn" Content="Bookmark" Width="70" Command="{Binding AddBookmarkCommand}" HotKey="{Binding AddBookmarkGesture}" />
             <Button Grid.Column="7" x:Name="SettingsBtn" Content="Options" Width="70">
                 <Button.Flyout>
                     <Flyout Placement="Bottom">
                         <StackPanel>
-                            <Button Content="History" Command="{Binding OpenHistoryCommand}" />
+                            <Button Content="History" Command="{Binding OpenHistoryCommand}" HotKey="{Binding OpenHistoryGesture}" />
                         </StackPanel>
                     </Flyout>
                 </Button.Flyout>
@@ -134,8 +134,13 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+            
             <!-- New Tab Button -->
             <Button Grid.Row="1" x:Name="MyBtn" Content="+" Command="{Binding AddNewTabCommand}" HorizontalAlignment="Center" Margin="10" Foreground="White" Background="#E07A5F"/>
+
+            <!-- Invisible Buttons for Tab Navigation -->
+            <Button Grid.Row="0" Width="0" Height="0" Command="{Binding NavigateUpCommand}" HotKey="{Binding NavigateUpGesture}" />
+            <Button Grid.Row="0" Width="0" Height="0" Command="{Binding NavigateDownCommand}" HotKey="{Binding NavigateDownGesture}" />
         </Grid>
 
         <!-- GridSplitter for Resizing Tab Column -->

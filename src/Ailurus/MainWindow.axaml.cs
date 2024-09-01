@@ -12,6 +12,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
+        
             
         viewModel.AddNewTabCommand.Execute().Subscribe();
     }
