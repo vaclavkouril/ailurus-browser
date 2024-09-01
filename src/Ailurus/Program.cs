@@ -10,7 +10,7 @@ namespace Ailurus;
 /// <summary>
 /// The entry point of the application, responsible for initializing and starting the application.
 /// </summary>
-internal static class Program
+public static class Program
 {
     /// <summary>
     /// The main entry point method for the application.
